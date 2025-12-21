@@ -19,20 +19,28 @@ export function Hero() {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
           <div className="space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0077FF]/10 text-[#0077FF] border border-[#0077FF]/20">
-              <span className="w-2 h-2 bg-[#0077FF] rounded-full animate-pulse" />
-              <span className="text-sm">Nouvelle plateforme e-commerce</span>
+            <div className="flex flex-wrap gap-2">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0077FF]/10 text-[#0077FF] border border-[#0077FF]/20">
+                <span className="w-2 h-2 bg-[#0077FF] rounded-full animate-pulse" />
+                <span className="text-sm">Nouvelle plateforme e-commerce</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600 border border-green-500/20">
+                <span className="text-sm font-semibold">🇩🇿 100% Algérienne</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 text-purple-600 border border-purple-500/20">
+                <span className="text-sm font-semibold">✨ Inspirée de Shopify</span>
+              </div>
             </div>
 
             <h1 className="text-[#0A1A2F]" style={{ fontSize: '56px', fontWeight: '800', lineHeight: '1.1' }}>
-              Crée ta boutique en ligne en{" "}
+              La première plateforme e-commerce{" "}
               <span className="bg-gradient-to-r from-[#0077FF] to-[#5AC8FA] bg-clip-text text-transparent">
-                quelques minutes.
+                algérienne
               </span>
             </h1>
 
             <p className="text-[#0A1A2F]/70 text-xl max-w-xl">
-              Shopina est une plateforme e-commerce moderne inspirée de Shopify, facile à utiliser, performante et personnalisable.
+              Shopina, inspirée de Shopify, est une plateforme e-commerce 100% algérienne, facile à utiliser, performante et complètement adaptée au marché algérien.
             </p>
 
             {/* Email Form */}

@@ -2,6 +2,12 @@ import { Check, X } from "lucide-react";
 
 const comparisonData = [
   {
+    feature: "Plateforme",
+    shopina: "Shopina - 100% Algérienne",
+    shopify: "Shopify - Plateforme internationale",
+    advantage: true,
+  },
+  {
     feature: "Prix mensuel",
     shopina: "À partir de 19$/mois",
     shopify: "À partir de 29$/mois",

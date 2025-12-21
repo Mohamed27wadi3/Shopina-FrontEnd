@@ -1,58 +1,96 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 interface User {
   id: string;
-  name: string;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
   avatar?: string;
   plan: "free" | "starter" | "pro" | "enterprise";
-  shopName?: string;
+  shop_name?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  signup: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('access_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
+  useEffect(() => {
+    const loadProfile = async () => {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/users/profile/`, { headers: { ...getAuthHeaders() } });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+        } else {
+          console.warn('Failed to fetch profile');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadProfile();
+  }, []);
+
   const login = async (email: string, password: string) => {
-    // Simulation d'une connexion
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setUser({
-      id: "1",
-      name: "Sophie Martin",
-      email: email,
-      plan: "pro",
-      shopName: "Ma Boutique",
+    const res = await fetch(`${API_BASE}/api/users/token/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: email, password }),
     });
+    if (!res.ok) throw new Error('Authentication failed');
+    const data = await res.json();
+    localStorage.setItem('access_token', data.access);
+    localStorage.setItem('refresh_token', data.refresh);
+    // Fetch profile
+    const profileRes = await fetch(`${API_BASE}/api/users/profile/`, { headers: { ...getAuthHeaders() } });
+    if (profileRes.ok) {
+      const profile = await profileRes.json();
+      setUser(profile);
+    }
   };
 
-  const signup = async (name: string, email: string, password: string) => {
-    // Simulation d'une inscription
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setUser({
-      id: "1",
-      name: name,
-      email: email,
-      plan: "free",
+  const signup = async (username: string, email: string, password: string) => {
+    const res = await fetch(`${API_BASE}/api/users/register/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password }),
     });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(JSON.stringify(err));
+    }
+    const data = await res.json();
+    localStorage.setItem('access_token', data.access);
+    localStorage.setItem('refresh_token', data.refresh);
+    setUser(data.user);
   };
 
   const logout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     setUser(null);
   };
 
   const updateProfile = (data: Partial<User>) => {
-    if (user) {
-      setUser({ ...user, ...data });
-    }
+    if (user) setUser({ ...user, ...data });
   };
 
   return (

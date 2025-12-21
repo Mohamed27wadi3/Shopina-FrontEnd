@@ -64,7 +64,7 @@ export function Header() {
               variant="ghost" 
               className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/5 dark:hover:bg-[#5AC8FA]/10"
             >
-              {t("login")}
+              {t("loginBtn")}
             </Button>
             <Button 
               onClick={() => navigate("/signup")}

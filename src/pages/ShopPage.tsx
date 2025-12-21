@@ -7,34 +7,51 @@ import { ShoppingCart, Search, Star, Filter, Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 
-const categories = [
-  "Tous les produits",
-  "Mode",
-  "Électronique",
-  "Maison & Jardin",
-  "Sport & Loisirs",
-  "Beauté & Santé",
-  "Livres & Médias"
-];
+import { useEffect, useState } from "react";
 
-const products = [
-  { id: 1, name: "T-shirt Premium", category: "Mode", price: 29.99, rating: 4.5, reviews: 128, image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400", stock: 15 },
-  { id: 2, name: "Casque Audio Pro", category: "Électronique", price: 149.99, rating: 4.8, reviews: 342, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", stock: 8 },
-  { id: 3, name: "Chaise de Bureau", category: "Maison & Jardin", price: 199.99, rating: 4.6, reviews: 89, image: "https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=400", stock: 12 },
-  { id: 4, name: "Montre Connectée", category: "Électronique", price: 249.99, rating: 4.7, reviews: 256, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400", stock: 20 },
-  { id: 5, name: "Ballon de Football", category: "Sport & Loisirs", price: 34.99, rating: 4.4, reviews: 67, image: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=400", stock: 30 },
-  { id: 6, name: "Sérum Visage", category: "Beauté & Santé", price: 45.99, rating: 4.9, reviews: 412, image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400", stock: 25 },
-  { id: 7, name: "Lampe LED Design", category: "Maison & Jardin", price: 59.99, rating: 4.3, reviews: 54, image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400", stock: 18 },
-  { id: 8, name: "Livre de Cuisine", category: "Livres & Médias", price: 24.99, rating: 4.6, reviews: 134, image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400", stock: 40 }
-];
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+
+const DEFAULT_CATEGORY = 'Tous les produits';
+
+const categoriesPlaceholder = [DEFAULT_CATEGORY];
+
+const productsPlaceholder: any[] = [];
 
 export function ShopPage() {
-  const [selectedCategory, setSelectedCategory] = useState("Tous les produits");
+  const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORY);
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<number[]>([]);
+  const [products, setProducts] = useState(productsPlaceholder);
+  const [categories, setCategories] = useState(categoriesPlaceholder);
+  const [loading, setLoading] = useState(false);
 
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = selectedCategory === "Tous les produits" || product.category === selectedCategory;
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [prodRes, catRes] = await Promise.all([
+          fetch(`${API_BASE}/api/shop/products/`),
+          fetch(`${API_BASE}/api/shop/categories/`),
+        ]);
+        if (prodRes.ok) {
+          const data = await prodRes.json();
+          setProducts(data);
+        }
+        if (catRes.ok) {
+          const data = await catRes.json();
+          setCategories([DEFAULT_CATEGORY, ...data.map((c: any) => c.name)]);
+        }
+      } catch (e) {
+        console.error('Failed to fetch products or categories', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredProducts = products.filter((product: any) => {
+    const matchesCategory = selectedCategory === DEFAULT_CATEGORY || product.category?.name === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
