@@ -1,47 +1,194 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { DashboardHeader } from "../components/DashboardHeader";
 import { DashboardSidebar } from "../components/DashboardSidebar";
-import { User, Mail, Phone, MapPin, Building, Save, Camera } from "lucide-react";
+import { User, Mail, Phone, MapPin, Building, Save, Camera, Loader, Globe } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Avatar, AvatarFallback } from "../components/ui/avatar";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
+import { COUNTRIES, sortedCountries, getCountryByCode } from "../data/countries";
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+
+type ProfileForm = {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  country: string;
+  bio: string;
+  shopName: string;
+  shopUrl: string;
+};
 
 export function ProfilePage() {
   const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    name: user?.name || "",
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [formData, setFormData] = useState<ProfileForm>({
+    name: user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.username || "",
     email: user?.email || "",
-    phone: "+33 6 12 34 56 78",
-    address: "123 Rue de la République",
-    city: "Paris",
-    country: "France",
+    phone: user?.phone_number || "",
+    address: user?.street_address || "",
+    city: user?.city || "",
+    country: user?.country || "DZ",
     bio: "Passionné d'e-commerce et entrepreneur créatif.",
-    shopName: user?.shopName || "Ma Boutique",
+    shopName: user?.shop_name || "Ma Boutique",
     shopUrl: "ma-boutique",
   });
 
+  // Update form data when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.username || "",
+        email: user?.email || "",
+        phone: user?.phone_number || "",
+        address: user?.street_address || "",
+        city: user?.city || "",
+        country: user?.country || "DZ",
+        shopName: user?.shop_name || "Ma Boutique",
+      }));
+    }
+  }, [user]);
+
+  // Auto-save phone and country changes
+  const saveProfileField = async (fieldName: string, value: string) => {
+    const payload: any = {};
+    
+    if (fieldName === 'phone') {
+      payload.phone_number = value;
+    } else if (fieldName === 'city') {
+      payload.city = value;
+    } else if (fieldName === 'country') {
+      payload.country = value;
+    }
+
+    if (Object.keys(payload).length === 0) return;
+
+    try {
+      setIsSaving(true);
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/api/users/profile/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error?.message || 'Erreur lors de la sauvegarde');
+      }
+
+      const data = await res.json();
+      updateProfile(data);
+      toast.success("Modification sauvegardée ✓");
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de la sauvegarde");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const [firstName, ...rest] = formData.name.split(' ');
+    const lastName = rest.join(' ');
     updateProfile({
-      name: formData.name,
+      first_name: firstName || undefined,
+      last_name: lastName || undefined,
       email: formData.email,
-      shopName: formData.shopName,
+      shop_name: formData.shopName,
     });
     setIsEditing(false);
     toast.success("Profil mis à jour avec succès !");
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Auto-save for phone and country fields
+    if (name === 'phone' || name === 'country' || name === 'city') {
+      saveProfileField(name, value);
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Vérifier la taille (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image doit faire moins de 5 MB");
+      return;
+    }
+
+    // Vérifier le type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Sélectionnez une image valide (JPG, PNG, GIF)");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+
+    try {
+      // Uploader l'image
+      const formDataImage = new FormData();
+      formDataImage.append('avatar', file);
+
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/api/users/profile/`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formDataImage,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.error('❌ Upload failed:', err);
+        throw new Error(err.error?.message || 'Erreur lors de l\'upload');
+      }
+
+      const data = await res.json();
+      console.log('✅ Avatar uploaded successfully:', data);
+      
+      // Mettre à jour le profil avec l'avatar
+      updateProfile({ 
+        avatar: data.avatar,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        shop_name: data.shop_name,
+      });
+      
+      toast.success("Avatar mis à jour avec succès !");
+    } catch (error: any) {
+      console.error('❌ Avatar upload error:', error);
+      toast.error(error.message || "Erreur lors de l'upload de l'avatar");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
   return (
@@ -70,22 +217,60 @@ export function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-6">
-                    <Avatar className="w-24 h-24 bg-gradient-to-br from-[#0077FF] to-[#5AC8FA]">
-                      <AvatarFallback className="text-white text-2xl" style={{ fontWeight: '700' }}>
-                        {user?.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative w-24 h-24">
+                      {user?.avatar ? (
+                        <img 
+                          src={user.avatar.startsWith('http') ? user.avatar : `${API_BASE}${user.avatar}`} 
+                          alt="Avatar" 
+                          className="w-full h-full rounded-full object-cover"
+                          onError={(e) => {
+                            console.error('Avatar image failed to load:', user.avatar);
+                            const img = e.target as HTMLImageElement;
+                            img.style.display = 'none';
+                            // Afficher le fallback
+                            const parent = img.parentElement;
+                            if (parent) {
+                              const fallback = parent.querySelector('.avatar-fallback');
+                              if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                            }
+                          }}
+                        />
+                      ) : null}
+                      <div className="avatar-fallback w-full h-full rounded-full bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] flex items-center justify-center text-white text-2xl font-bold" style={{ display: user?.avatar ? 'none' : 'flex' }}>
+                        {(user?.first_name || user?.username || 'U').charAt(0)}{(user?.last_name || '').charAt(0) || ''}
+                      </div>
+                    </div>
                     <div className="flex-1">
                       <p className="text-[#0A1A2F] mb-2" style={{ fontWeight: '600' }}>
-                        {user?.name}
+                        {formData.name}
                       </p>
                       <p className="text-[#0A1A2F]/60 text-sm mb-4">
                         Format JPG, PNG ou GIF. Taille maximale 5 MB.
                       </p>
-                      <Button className="bg-[#0077FF] hover:bg-[#0077FF]/90 text-white rounded-xl">
-                        <Camera className="w-4 h-4 mr-2" />
-                        Changer la photo
+                      <Button 
+                        onClick={handleAvatarClick}
+                        disabled={isUploadingAvatar}
+                        className="bg-[#0077FF] hover:bg-[#0077FF]/90 text-white rounded-xl"
+                      >
+                        {isUploadingAvatar ? (
+                          <>
+                            <Loader className="w-4 h-4 mr-2 animate-spin" />
+                            Téléchargement...
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="w-4 h-4 mr-2" />
+                            Changer la photo
+                          </>
+                        )}
                       </Button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/png,image/jpeg,image/gif,image/webp"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -169,16 +354,52 @@ export function ProfilePage() {
                           Ville
                         </Label>
                         <div className="relative">
-                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0A1A2F]/40" />
+                          <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0A1A2F]/40 pointer-events-none" />
                           <Input
                             id="city"
                             name="city"
                             value={formData.city}
                             onChange={handleChange}
                             disabled={!isEditing}
+                            placeholder="Entrez votre ville"
                             className="pl-10 h-11 rounded-xl border-2 border-gray-200 focus:border-[#0077FF]"
                           />
                         </div>
+                      </div>
+
+                      {/* Country */}
+                      <div className="space-y-2">
+                        <Label htmlFor="country" className="text-[#0A1A2F]">
+                          Pays
+                        </Label>
+                        <div className="relative">
+                          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0A1A2F]/40 pointer-events-none z-10" />
+                          <select
+                            id="country"
+                            name="country"
+                            value={formData.country}
+                            onChange={handleChange}
+                            disabled={!isEditing}
+                            className="pl-10 h-11 w-full rounded-xl border-2 border-gray-200 focus:border-[#0077FF] focus:outline-none appearance-none text-[#0A1A2F] bg-white disabled:bg-gray-50 disabled:text-[#0A1A2F]/60"
+                          >
+                            <option value="">Sélectionnez un pays...</option>
+                            {sortedCountries().map((country) => (
+                              <option key={country.code} value={country.code}>
+                                {country.name} ({country.region})
+                              </option>
+                            ))}
+                          </select>
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <svg className="w-4 h-4 text-[#0A1A2F]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                          </div>
+                        </div>
+                        {formData.country && (
+                          <p className="text-xs text-[#0077FF] mt-1">
+                            {getCountryByCode(formData.country)?.region}
+                          </p>
+                        )}
                       </div>
                     </div>
 
