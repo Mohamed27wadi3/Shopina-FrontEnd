@@ -13,6 +13,7 @@ interface User {
   country?: string;
   plan: "free" | "starter" | "pro" | "enterprise";
   shop_name?: string;
+  shop_slug?: string;
 } 
 
 interface AuthContextType {

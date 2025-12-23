@@ -41,8 +41,72 @@ export function ProfilePage() {
     country: user?.country || "DZ",
     bio: "Passionné d'e-commerce et entrepreneur créatif.",
     shopName: user?.shop_name || "Ma Boutique",
-    shopUrl: "ma-boutique",
+    shopUrl: user?.shop_slug || "ma-boutique",
   });
+
+  // Change password UI state
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [cpOldPassword, setCpOldPassword] = useState('');
+  const [cpNewPassword, setCpNewPassword] = useState('');
+  const [cpNewPasswordConfirm, setCpNewPasswordConfirm] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handleChangePassword = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!cpOldPassword || !cpNewPassword || !cpNewPasswordConfirm) {
+      toast.error('Veuillez remplir tous les champs.');
+      return;
+    }
+    if (cpNewPassword !== cpNewPasswordConfirm) {
+      toast.error('Les nouveaux mots de passe ne correspondent pas.');
+      return;
+    }
+
+    try {
+      setIsChangingPassword(true);
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/api/users/change-password/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          old_password: cpOldPassword,
+          new_password: cpNewPassword,
+          new_password_confirm: cpNewPasswordConfirm,
+        }),
+      });
+
+      const body = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        // Prefer explicit error messages
+        const err = body?.error || body || { message: 'Erreur lors du changement de mot de passe' };
+        toast.error(typeof err === 'string' ? err : err.message || JSON.stringify(err));
+        return;
+      }
+
+      toast.success('Mot de passe changé avec succès.');
+      // Refresh profile to get last_password_change
+      const profileRes = await fetch(`${API_BASE}/api/users/profile/`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        updateProfile(profileData);
+      }
+      // Reset form
+      setCpOldPassword('');
+      setCpNewPassword('');
+      setCpNewPasswordConfirm('');
+      setShowChangePassword(false);
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur interne');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   // Update form data when user changes
   useEffect(() => {
@@ -56,6 +120,7 @@ export function ProfilePage() {
         city: user?.city || "",
         country: user?.country || "DZ",
         shopName: user?.shop_name || "Ma Boutique",
+        shopUrl: user?.shop_slug || 'ma-boutique',
       }));
     }
   }, [user]);
@@ -63,13 +128,18 @@ export function ProfilePage() {
   // Auto-save phone and country changes
   const saveProfileField = async (fieldName: string, value: string) => {
     const payload: any = {};
-    
-    if (fieldName === 'phone') {
+
+    // Map friendly names to API keys
+    if (fieldName === 'phone' || fieldName === 'phone_number') {
       payload.phone_number = value;
     } else if (fieldName === 'city') {
       payload.city = value;
     } else if (fieldName === 'country') {
       payload.country = value;
+    } else if (fieldName === 'shopName' || fieldName === 'shop_name') {
+      payload.shop_name = value;
+    } else if (fieldName === 'shop_slug') {
+      payload.shop_slug = value;
     }
 
     if (Object.keys(payload).length === 0) return;
@@ -101,30 +171,52 @@ export function ProfilePage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const [firstName, ...rest] = formData.name.split(' ');
     const lastName = rest.join(' ');
+
+    // Update local context first for snappy UI
     updateProfile({
       first_name: firstName || undefined,
       last_name: lastName || undefined,
       email: formData.email,
       shop_name: formData.shopName,
     });
+
+    // Persist shop name and slug
+    const slug = (formData.shopUrl || '').trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    await saveProfileField('shop_name', formData.shopName);
+    await saveProfileField('shop_slug', slug);
+
     setIsEditing(false);
     toast.success("Profil mis à jour avec succès !");
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
+    // For shopUrl, keep raw input but prepare slug when saving
+    if (name === 'shopUrl') {
+      setFormData({ ...formData, shopUrl: value });
+      const slug = value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || '';
+      saveProfileField('shop_slug', slug);
+      return;
+    }
+
     setFormData({
       ...formData,
       [name]: value,
     });
 
-    // Auto-save for phone and country fields
+    // Auto-save for phone, country and city
     if (name === 'phone' || name === 'country' || name === 'city') {
       saveProfileField(name, value);
+    }
+
+    // Auto-save for shop name
+    if (name === 'shopName') {
+      saveProfileField('shop_name', value);
     }
   };
 
@@ -474,7 +566,7 @@ export function ProfilePage() {
                           URL de la boutique
                         </Label>
                         <div className="flex items-center gap-2">
-                          <span className="text-[#0A1A2F]/60 text-sm">shopina.com/</span>
+                          <span className="text-[#0A1A2F]/60 text-sm">{import.meta.env.VITE_SHOP_DOMAIN || 'shopina.com'}/</span>
                           <Input
                             id="shopUrl"
                             name="shopUrl"
@@ -518,12 +610,28 @@ export function ProfilePage() {
                           Mot de passe
                         </p>
                         <p className="text-[#0A1A2F]/60 text-sm">
-                          Dernière modification il y a 3 mois
+                          {user?.last_password_change ? `Dernière modification : ${new Date(user.last_password_change).toLocaleString()}` : 'Aucune modification enregistrée'}
                         </p>
                       </div>
-                      <Button variant="outline" className="rounded-xl border-2 border-gray-200">
-                        Changer
-                      </Button>
+                      {!showChangePassword ? (
+                        <Button
+                          variant="outline"
+                          className="rounded-xl border-2 border-gray-200"
+                          onClick={() => setShowChangePassword(true)}
+                        >
+                          Changer
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            className="rounded-xl border-2 border-gray-200"
+                            onClick={() => setShowChangePassword(false)}
+                          >
+                            Annuler
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
@@ -538,6 +646,48 @@ export function ProfilePage() {
                         Activer
                       </Button>
                     </div>
+
+                    {showChangePassword && (
+                      <form onSubmit={handleChangePassword} className="mt-4 space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <Input
+                            id="cp_old"
+                            name="cp_old"
+                            value={cpOldPassword}
+                            onChange={(e) => setCpOldPassword(e.target.value)}
+                            placeholder="Mot de passe actuel"
+                            type="password"
+                            className="col-span-1 md:col-span-3 h-11 rounded-xl border-2 border-gray-200"
+                          />
+                          <Input
+                            id="cp_new"
+                            name="cp_new"
+                            value={cpNewPassword}
+                            onChange={(e) => setCpNewPassword(e.target.value)}
+                            placeholder="Nouveau mot de passe"
+                            type="password"
+                            className="col-span-1 md:col-span-3 h-11 rounded-xl border-2 border-gray-200"
+                          />
+                          <Input
+                            id="cp_new_confirm"
+                            name="cp_new_confirm"
+                            value={cpNewPasswordConfirm}
+                            onChange={(e) => setCpNewPasswordConfirm(e.target.value)}
+                            placeholder="Confirmez le nouveau mot de passe"
+                            type="password"
+                            className="col-span-1 md:col-span-3 h-11 rounded-xl border-2 border-gray-200"
+                          />
+                        </div>
+                        <div className="flex gap-3">
+                          <Button type="submit" className="bg-[#0077FF] hover:bg-[#0077FF]/90 text-white rounded-xl" disabled={isChangingPassword}>
+                            {isChangingPassword ? 'En cours...' : 'Valider'}
+                          </Button>
+                          <Button type="button" variant="outline" className="rounded-xl border-2 border-gray-200" onClick={() => setShowChangePassword(false)}>
+                            Annuler
+                          </Button>
+                        </div>
+                      </form>
+                    )}
                   </div>
                 </CardContent>
               </Card>
