@@ -1,9 +1,14 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Check } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
+import { PlanCheckoutCard } from "../components/PlanCheckoutCard";
+import { useAuth } from "../context/AuthContext";
+import { paymentsAPI } from "../services/api";
+import { toast } from "sonner";
 
 const plans = [
   {
@@ -77,6 +82,65 @@ const plans = [
 
 export function PricingPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number; period: string; key: "free" | "starter" | "pro" | "enterprise" } | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const prices = useMemo(() => ({
+    free: 0,
+    starter: 19,
+    pro: 49,
+    enterprise: 99,
+  }), []);
+
+  const normalizePlan = (name: string): "free" | "starter" | "pro" | "enterprise" => {
+    const slug = name.toLowerCase();
+    if (slug.includes("starter")) return "starter";
+    if (slug.includes("pro")) return "pro";
+    if (slug.includes("enter")) return "enterprise";
+    return "free";
+  };
+
+  const handleActivateFree = async () => {
+    if (!user) {
+      navigate(`/login?next=${encodeURIComponent('/pricing')}`);
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await paymentsAPI.subscribe({ plan: "free", billing_cycle: "monthly", price: prices.free });
+      toast.success("Plan gratuit activé");
+      navigate("/dashboard");
+    } catch (err: any) {
+      toast.error(err?.message || "Activation impossible");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSelectPlan = (plan: typeof plans[number]) => {
+    const key = normalizePlan(plan.name);
+    if (key === "free") {
+      handleActivateFree();
+      return;
+    }
+
+    if (!user) {
+      navigate(`/login?next=${encodeURIComponent('/pricing')}`);
+      return;
+    }
+
+    const price = plan.price === "Sur mesure" ? prices.enterprise : Number(plan.price.replace(/[^0-9.]/g, "")) || prices[key];
+    setSelectedPlan({ name: plan.name, price, period: plan.period, key });
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPayment(false);
+    setSelectedPlan(null);
+    navigate("/dashboard");
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
@@ -135,15 +199,10 @@ export function PricingPage() {
                         ? "bg-[#0077FF] hover:bg-[#0077FF]/90 text-white shadow-lg shadow-[#0077FF]/30"
                         : "bg-gray-100 hover:bg-gray-200 text-[#0A1A2F]"
                     }`}
-                    onClick={() => {
-                      if (plan.name === "Enterprise") {
-                        navigate("/support");
-                      } else {
-                        navigate("/signup");
-                      }
-                    }}
+                    disabled={isSubmitting}
+                    onClick={() => handleSelectPlan(plan)}
                   >
-                    {plan.cta}
+                    {isSubmitting && normalizePlan(plan.name) === "free" ? "Activation..." : plan.cta}
                   </Button>
 
                   <ul className="space-y-3">
@@ -194,6 +253,14 @@ export function PricingPage() {
       </section>
 
       <Footer />
+
+      {showPayment && (
+        <PlanCheckoutCard
+          plan={selectedPlan}
+          onClose={() => setShowPayment(false)}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }

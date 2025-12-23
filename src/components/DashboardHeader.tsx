@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { Bell, Search, Moon, Sun, Globe } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, Moon, Sun, Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -13,9 +13,9 @@ import {
 } from "./ui/dropdown-menu";
 import { useAuth } from "../context/AuthContext";
 import { useThemeLanguage } from "../context/ThemeLanguageContext";
-import { useNavigate } from "react-router-dom";
+import { NotificationBell } from "./NotificationBell";
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
 export function DashboardHeader() {
   const { user, logout } = useAuth();
@@ -54,10 +54,7 @@ export function DashboardHeader() {
           {/* Right Section */}
           <div className="flex items-center gap-4">
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative rounded-xl">
-              <Bell className="w-5 h-5 text-[#0A1A2F] dark:text-gray-100" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-            </Button>
+            <NotificationBell />
 
             {/* Theme Toggle */}
             <Button
@@ -88,17 +85,17 @@ export function DashboardHeader() {
                   <Avatar className="w-10 h-10">
                     {user?.avatar && (
                       <AvatarImage
-                        src={user.avatar.startsWith('http') ? user.avatar : `${API_BASE}${user.avatar}`}
+                        src={user.avatar.startsWith("http") ? user.avatar : `${API_BASE}${user.avatar}`}
                         alt={user.first_name || user.username}
                         className="object-cover"
                       />
                     )}
-                    <AvatarFallback className="bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] text-white" style={{ fontWeight: '700' }}>
-                      {(user?.first_name || user?.username || 'U').charAt(0).toUpperCase()}
+                    <AvatarFallback className="bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] text-white" style={{ fontWeight: "700" }}>
+                      {(user?.first_name || user?.username || "U").charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-left hidden lg:block">
-                    <p className="text-[#0A1A2F] dark:text-gray-100 text-sm" style={{ fontWeight: '600' }}>
+                    <p className="text-[#0A1A2F] dark:text-gray-100 text-sm" style={{ fontWeight: "600" }}>
                       {user?.first_name || user?.username}
                     </p>
                     <p className="text-[#0A1A2F]/60 dark:text-gray-400 text-xs">

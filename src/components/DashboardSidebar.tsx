@@ -11,13 +11,17 @@ import {
   HelpCircle,
 } from "lucide-react";
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const API_ORIGIN = (() => { try { return new URL(API_BASE).origin; } catch { return 'http://localhost:8000'; }})();
+
 const menuItems = [
   { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard" },
-  { icon: ShoppingCart, label: "Commandes", path: "/dashboard" },
+  // Route Commandes to React orders page (same interface)
+  { icon: ShoppingCart, label: "Commandes", path: "/orders" },
   { icon: Package, label: "Produits", path: "/dashboard" },
-  { icon: Users, label: "Clients", path: "/dashboard" },
+  { icon: Users, label: "Clients", externalHref: `${API_ORIGIN}/clients/` },
   { icon: BarChart3, label: "Statistiques", path: "/dashboard" },
-  { icon: Store, label: "Ma boutique", path: "/shop" },
+  { icon: Store, label: "Ma boutique", externalHref: `${API_ORIGIN}/my-shop/` },
   { icon: CreditCard, label: "Paiements", path: "/pricing" },
   { icon: Settings, label: "Paramètres", path: "/profile" },
   { icon: HelpCircle, label: "Aide", path: "/support" },
@@ -34,7 +38,22 @@ export function DashboardSidebar() {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
           
-          return (
+          return item.externalHref ? (
+            <a
+              key={index}
+              href={item.externalHref}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                isActive
+                  ? "bg-gradient-to-r from-[#0077FF] to-[#5AC8FA] text-white shadow-lg shadow-[#0077FF]/20"
+                  : "text-[#0A1A2F]/70 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#0077FF] dark:hover:text-[#5AC8FA]"
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span style={{ fontWeight: isActive ? '600' : '500' }}>
+                {item.label}
+              </span>
+            </a>
+          ) : (
             <Link
               key={index}
               to={item.path}

@@ -12,8 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { NotificationBell } from "./NotificationBell";
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+const API_ORIGIN = (() => {
+  try { return new URL(API_BASE).origin; } catch { return 'http://localhost:8000'; }
+})();
 
 export function Header() {
   const navigate = useNavigate();
@@ -39,31 +43,33 @@ export function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link to="/#features" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] transition-colors">
+            <Link to="/#features" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/6 dark:hover:bg-[#5AC8FA]/12 px-2 py-1 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50 focus-visible:bg-[#0077FF]/10 dark:focus-visible:bg-[#5AC8FA]/15">
               {t("features")}
             </Link>
-            <Link to="/pricing" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] transition-colors">
+            <Link to="/pricing" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/6 dark:hover:bg-[#5AC8FA]/12 px-2 py-1 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50 focus-visible:bg-[#0077FF]/10 dark:focus-visible:bg-[#5AC8FA]/15">
               {t("pricing")}
             </Link>
-            <Link to="/templates" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] transition-colors">
+            <Link to="/templates" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/6 dark:hover:bg-[#5AC8FA]/12 px-2 py-1 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50 focus-visible:bg-[#0077FF]/10 dark:focus-visible:bg-[#5AC8FA]/15">
               {t("templates")}
             </Link>
-            <Link to="/shop" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] transition-colors">
+            <Link to="/shop" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/6 dark:hover:bg-[#5AC8FA]/12 px-2 py-1 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50 focus-visible:bg-[#0077FF]/10 dark:focus-visible:bg-[#5AC8FA]/15">
               {t("shop")}
             </Link>
-            <Link to="/support" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] transition-colors">
+            <Link to="/support" className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/6 dark:hover:bg-[#5AC8FA]/12 px-2 py-1 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50 focus-visible:bg-[#0077FF]/10 dark:focus-visible:bg-[#5AC8FA]/15">
               {t("support")}
             </Link>
           </nav>
 
           {/* CTA Buttons */}
           <div className="flex items-center gap-3">
+            {/* Notifications */}
+            <NotificationBell />
             {/* Theme Toggle */}
             <Button
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
               variant="ghost"
               size="icon"
-              className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/5 dark:hover:bg-[#5AC8FA]/10"
+              className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/8 dark:hover:bg-[#5AC8FA]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50 focus-visible:bg-[#0077FF]/12 dark:focus-visible:bg-[#5AC8FA]/18"
             >
               {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
             </Button>
@@ -73,7 +79,7 @@ export function Header() {
               onClick={() => setLanguage(language === "fr" ? "ar" : "fr")}
               variant="ghost"
               size="icon"
-              className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/5 dark:hover:bg-[#5AC8FA]/10"
+              className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/8 dark:hover:bg-[#5AC8FA]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50 focus-visible:bg-[#0077FF]/12 dark:focus-visible:bg-[#5AC8FA]/18"
               title={language === "fr" ? "العربية" : "Français"}
             >
               <Globe className="w-5 h-5" />
@@ -111,6 +117,11 @@ export function Header() {
                   <DropdownMenuItem onClick={() => navigate("/profile")}>
                     {t("profile")}
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => { navigate('/my-shop'); }}
+                  >
+                    Ma boutique
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                     <LogOut className="w-4 h-4 mr-2" />
@@ -123,7 +134,7 @@ export function Header() {
                 <Button 
                   onClick={() => navigate("/login")}
                   variant="ghost" 
-                  className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/5 dark:hover:bg-[#5AC8FA]/10"
+                  className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/8 dark:hover:bg-[#5AC8FA]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50 focus-visible:bg-[#0077FF]/12 dark:focus-visible:bg-[#5AC8FA]/18"
                 >
                   {t("loginBtn")}
                 </Button>

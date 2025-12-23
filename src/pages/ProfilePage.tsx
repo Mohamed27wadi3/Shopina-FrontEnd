@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { useState, useRef, useEffect } from "react";
 import { DashboardHeader } from "../components/DashboardHeader";
 import { DashboardSidebar } from "../components/DashboardSidebar";
@@ -50,6 +51,24 @@ export function ProfilePage() {
   const [cpNewPassword, setCpNewPassword] = useState('');
   const [cpNewPasswordConfirm, setCpNewPasswordConfirm] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Two-factor authentication UI state
+  const [is2faStarting, setIs2faStarting] = useState(false);
+  const [show2faVerify, setShow2faVerify] = useState(false);
+  const [twoFaOtp, setTwoFaOtp] = useState('');
+  const [is2faVerifying, setIs2faVerifying] = useState(false);
+
+  // Cursor-driven motion for subtle parallax background
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const handler = (e: PointerEvent) => setMousePos({ x: e.clientX, y: e.clientY });
+    window.addEventListener('pointermove', handler);
+    return () => window.removeEventListener('pointermove', handler);
+  }, []);
+  const motionStyle: CSSProperties = {
+    ['--mouse-x' as string]: `${mousePos.x}px`,
+    ['--mouse-y' as string]: `${mousePos.y}px`,
+  };
 
   const handleChangePassword = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -283,8 +302,99 @@ export function ProfilePage() {
     }
   };
 
+  // Start two-factor flow (send OTP)
+  const startTwoFactor = async () => {
+    try {
+      setIs2faStarting(true);
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/api/users/2fa/start/`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(body?.error || 'Erreur lors du démarrage de la 2FA');
+      }
+      if (body.debug_otp) {
+        toast.success(`DEBUG OTP: ${body.debug_otp}`);
+      } else {
+        toast.success('OTP envoyé à votre email.');
+      }
+      setShow2faVerify(true);
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur lors du démarrage de la 2FA');
+    } finally {
+      setIs2faStarting(false);
+    }
+  };
+
+  // Verify OTP and enable 2FA
+  const verifyTwoFactor = async (enable = true) => {
+    if (!twoFaOtp) {
+      toast.error("Veuillez entrer le code OTP");
+      return;
+    }
+    try {
+      setIs2faVerifying(true);
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/api/users/2fa/verify/`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otp: twoFaOtp, enable }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(body?.error || 'Erreur lors de la vérification OTP');
+      }
+
+      // Refresh profile
+      const profileRes = await fetch(`${API_BASE}/api/users/profile/`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        updateProfile(profileData);
+      }
+
+      toast.success('OTP vérifié, 2FA activée.');
+      setShow2faVerify(false);
+      setTwoFaOtp('');
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur lors de la vérification OTP');
+    } finally {
+      setIs2faVerifying(false);
+    }
+  };
+
+  // Disable 2FA
+  const disableTwoFactor = async () => {
+    try {
+      setIsSaving(true);
+      const token = localStorage.getItem('access_token');
+      const res = await fetch(`${API_BASE}/api/users/profile/`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ two_factor_enabled: false }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.error || 'Erreur lors de la désactivation');
+      }
+      const data = await res.json();
+      updateProfile(data);
+      toast.success('2FA désactivée.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Erreur lors de la désactivation');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 profile-motion" style={motionStyle}>
+      <div className="bg-blob bg-blob-1" aria-hidden />
+      <div className="bg-blob bg-blob-2" aria-hidden />
+      <div className="cursor-spotlight" aria-hidden />
       <DashboardHeader />
       <div className="flex">
         <DashboardSidebar />
@@ -292,20 +402,20 @@ export function ProfilePage() {
         <main className="flex-1 p-8">
           <div className="max-w-4xl mx-auto">
             {/* Page Header */}
-            <div className="mb-8">
-              <h1 className="text-[#0A1A2F] mb-2" style={{ fontSize: '36px', fontWeight: '800' }}>
+            <div className="mb-8 header-fade">
+              <h1 className="text-[#0A1A2F] dark:text-white mb-2" style={{ fontSize: '36px', fontWeight: '800' }}>
                 Mon Profil
               </h1>
-              <p className="text-[#0A1A2F]/60">
+              <p className="text-[#0A1A2F]/60 dark:text-white/70">
                 Gérez vos informations personnelles et les paramètres de votre boutique
               </p>
             </div>
 
             <div className="grid gap-6">
               {/* Profile Picture Card */}
-              <Card className="border-2 border-gray-100 rounded-2xl">
+              <Card className="border-2 border-gray-100 dark:border-gray-700 rounded-2xl animated-card hover-lift">
                 <CardHeader>
-                  <CardTitle className="text-[#0A1A2F]">Photo de profil</CardTitle>
+                  <CardTitle className="text-[#0A1A2F] dark:text-white">Photo de profil</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-6">
@@ -333,10 +443,10 @@ export function ProfilePage() {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <p className="text-[#0A1A2F] mb-2" style={{ fontWeight: '600' }}>
+                      <p className="text-[#0A1A2F] dark:text-white mb-2" style={{ fontWeight: '600' }}>
                         {formData.name}
                       </p>
-                      <p className="text-[#0A1A2F]/60 text-sm mb-4">
+                      <p className="text-[#0A1A2F]/60 dark:text-white/70 text-sm mb-4">
                         Format JPG, PNG ou GIF. Taille maximale 5 MB.
                       </p>
                       <Button 
@@ -369,9 +479,9 @@ export function ProfilePage() {
               </Card>
 
               {/* Personal Information */}
-              <Card className="border-2 border-gray-100 rounded-2xl">
+              <Card className="border-2 border-gray-100 dark:border-gray-700 rounded-2xl animated-card hover-lift">
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="text-[#0A1A2F]">Informations personnelles</CardTitle>
+                  <CardTitle className="text-[#0A1A2F] dark:text-white">Informations personnelles</CardTitle>
                   {!isEditing && (
                     <Button
                       onClick={() => setIsEditing(true)}
@@ -535,9 +645,19 @@ export function ProfilePage() {
               </Card>
 
               {/* Shop Settings */}
-              <Card className="border-2 border-gray-100 rounded-2xl">
+              <Card className="border-2 border-gray-100 dark:border-gray-700 rounded-2xl animated-card hover-lift">
                 <CardHeader>
-                  <CardTitle className="text-[#0A1A2F]">Paramètres de la boutique</CardTitle>
+                  <div className="flex items-center justify-between gap-3">
+                    <CardTitle className="text-[#0A1A2F] dark:text-white">Paramètres de la boutique</CardTitle>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-xl border-2 border-gray-200 hover:text-[#0077FF] hover:border-[#0077FF]"
+                      onClick={() => { window.location.href = '/my-shop'; }}
+                    >
+                      Gérer ma boutique
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
@@ -598,9 +718,9 @@ export function ProfilePage() {
               </Card>
 
               {/* Security */}
-              <Card className="border-2 border-gray-100 rounded-2xl">
+              <Card className="border-2 border-gray-100 dark:border-gray-700 rounded-2xl animated-card hover-lift">
                 <CardHeader>
-                  <CardTitle className="text-[#0A1A2F]">Sécurité</CardTitle>
+                  <CardTitle className="text-[#0A1A2F] dark:text-white">Sécurité</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -642,9 +762,31 @@ export function ProfilePage() {
                           Sécurisez davantage votre compte
                         </p>
                       </div>
-                      <Button variant="outline" className="rounded-xl border-2 border-gray-200">
-                        Activer
-                      </Button>
+                      <div>
+                        {user?.two_factor_enabled ? (
+                          <Button variant="outline" className="rounded-xl border-2 border-gray-200" onClick={disableTwoFactor} disabled={isSaving}>
+                            Désactiver
+                          </Button>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            {!show2faVerify ? (
+                              <Button variant="outline" className="rounded-xl border-2 border-gray-200" onClick={startTwoFactor} disabled={is2faStarting}>
+                                {is2faStarting ? 'Envoi...' : 'Activer'}
+                              </Button>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Input id="twofa_otp" name="twofa_otp" value={twoFaOtp} onChange={(e) => setTwoFaOtp(e.target.value)} placeholder="Entrez le code OTP" className="h-11 rounded-xl border-2 border-gray-200" />
+                                <Button onClick={() => verifyTwoFactor(true)} className="bg-[#0077FF] hover:bg-[#0077FF]/90 text-white rounded-xl" disabled={is2faVerifying}>
+                                  {is2faVerifying ? 'Vérification...' : 'Vérifier & Activer'}
+                                </Button>
+                                <Button variant="outline" onClick={() => { setShow2faVerify(false); setTwoFaOtp(''); }} className="rounded-xl border-2 border-gray-200">
+                                  Annuler
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {showChangePassword && (

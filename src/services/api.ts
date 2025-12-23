@@ -4,6 +4,13 @@
  */
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+export const API_ORIGIN = (() => {
+  try {
+    return new URL(API_BASE).origin;
+  } catch {
+    return 'http://localhost:8000';
+  }
+})();
 
 // ============================================================================
 // Helper Functions
@@ -21,14 +28,36 @@ export const getAuthHeaders = (): HeadersInit => {
 };
 
 /**
- * Handle API response
+ * Handle API response safely, including empty or non-JSON bodies
  */
 async function handleResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get('content-type') || '';
+  const hasBody = response.status !== 204 && response.status !== 205;
+
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'An error occurred' }));
-    throw new Error(error.detail || error.message || 'Request failed');
+    if (hasBody && contentType.includes('application/json')) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error((error as any).detail || (error as any).message || 'Request failed');
+    } else {
+      const text = hasBody ? await response.text().catch(() => '') : '';
+      throw new Error(text || 'Request failed');
+    }
   }
-  return response.json();
+
+  if (!hasBody) {
+    return {} as T;
+  }
+
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+
+  const text = await response.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return {} as T;
+  }
 }
 
 // ============================================================================
@@ -51,6 +80,7 @@ export const authAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+      credentials: 'include',
     });
     return handleResponse<{
       user: any;
@@ -67,6 +97,7 @@ export const authAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
+      credentials: 'include',
     });
     return handleResponse<{
       access: string;
@@ -82,6 +113,7 @@ export const authAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh: refreshToken }),
+      credentials: 'include',
     });
     return handleResponse<{ access: string }>(response);
   },
@@ -92,6 +124,7 @@ export const authAPI = {
   getProfile: async () => {
     const response = await fetch(`${API_BASE}/api/users/profile/`, {
       headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse<any>(response);
   },
@@ -104,6 +137,7 @@ export const authAPI = {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
+      credentials: 'include',
     });
     return handleResponse<any>(response);
   },
@@ -116,6 +150,7 @@ export const authAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
+      credentials: 'include',
     });
     return handleResponse<{ message: string }>(response);
   },
@@ -132,6 +167,7 @@ export const authAPI = {
         new_password: newPassword,
         new_password_confirm: newPassword,
       }),
+      credentials: 'include',
     });
     return handleResponse<{ message: string }>(response);
   },
@@ -151,7 +187,8 @@ export const productsAPI = {
     if (params?.category) queryParams.append('category__name', params.category);
 
     const response = await fetch(
-      `${API_BASE}/api/shop/products/?${queryParams.toString()}`
+      `${API_BASE}/api/shop/products/?${queryParams.toString()}`,
+      { credentials: 'include' }
     );
     return handleResponse<any[]>(response);
   },
@@ -160,7 +197,7 @@ export const productsAPI = {
    * Get single product by ID
    */
   getById: async (id: number) => {
-    const response = await fetch(`${API_BASE}/api/shop/products/${id}/`);
+    const response = await fetch(`${API_BASE}/api/shop/products/${id}/`, { credentials: 'include' });
     return handleResponse<any>(response);
   },
 
@@ -168,7 +205,7 @@ export const productsAPI = {
    * Get top-rated products
    */
   getTopRated: async () => {
-    const response = await fetch(`${API_BASE}/api/shop/products/top/`);
+    const response = await fetch(`${API_BASE}/api/shop/products/top/`, { credentials: 'include' });
     return handleResponse<any[]>(response);
   },
 };
@@ -182,7 +219,7 @@ export const categoriesAPI = {
    * Get all categories
    */
   getAll: async () => {
-    const response = await fetch(`${API_BASE}/api/shop/categories/`);
+    const response = await fetch(`${API_BASE}/api/shop/categories/`, { credentials: 'include' });
     return handleResponse<any[]>(response);
   },
 };
@@ -198,6 +235,7 @@ export const cartAPI = {
   get: async () => {
     const response = await fetch(`${API_BASE}/api/carts/`, {
       headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse<any>(response);
   },
@@ -210,6 +248,7 @@ export const cartAPI = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ product_id: productId, quantity }),
+      credentials: 'include',
     });
     return handleResponse<any>(response);
   },
@@ -222,6 +261,7 @@ export const cartAPI = {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify({ quantity }),
+      credentials: 'include',
     });
     return handleResponse<any>(response);
   },
@@ -233,6 +273,7 @@ export const cartAPI = {
     const response = await fetch(`${API_BASE}/api/carts/items/${itemId}/`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse<any>(response);
   },
@@ -244,6 +285,7 @@ export const cartAPI = {
     const response = await fetch(`${API_BASE}/api/carts/`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse<{ message: string }>(response);
   },
@@ -254,6 +296,7 @@ export const cartAPI = {
   validate: async () => {
     const response = await fetch(`${API_BASE}/api/carts/validate/`, {
       headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse<{ valid: boolean; message: string }>(response);
   },
@@ -270,6 +313,7 @@ export const ordersAPI = {
   getAll: async () => {
     const response = await fetch(`${API_BASE}/api/orders/`, {
       headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse<any[]>(response);
   },
@@ -280,6 +324,7 @@ export const ordersAPI = {
   getById: async (id: number) => {
     const response = await fetch(`${API_BASE}/api/orders/${id}/`, {
       headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse<any>(response);
   },
@@ -292,6 +337,24 @@ export const ordersAPI = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({}),
+      credentials: 'include',
+    });
+    return handleResponse<any>(response);
+  },
+};
+
+// ============================================================================
+// Dashboard / Analytics API
+// ============================================================================
+
+export const dashboardAPI = {
+  /**
+   * Get dashboard stats (orders, revenue, products, customers)
+   */
+  getStats: async () => {
+    const response = await fetch(`${API_BASE}/api/orders/dashboard/stats/`, {
+      headers: getAuthHeaders(),
+      credentials: 'include',
     });
     return handleResponse<any>(response);
   },
@@ -306,7 +369,7 @@ export const reviewsAPI = {
    * Get reviews for a product
    */
   getByProduct: async (productId: number) => {
-    const response = await fetch(`${API_BASE}/api/reviews/?product=${productId}`);
+    const response = await fetch(`${API_BASE}/api/reviews/?product=${productId}`, { credentials: 'include' });
     return handleResponse<any[]>(response);
   },
 
@@ -318,6 +381,7 @@ export const reviewsAPI = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
+      credentials: 'include',
     });
     return handleResponse<any>(response);
   },
@@ -400,6 +464,24 @@ export const paymentsAPI = {
     });
     return handleResponse<{ client_secret: string }>(response);
   },
+
+  /**
+   * Subscribe to a paid or free plan (no card data stored).
+   */
+  subscribe: async (data: {
+    plan: 'free' | 'starter' | 'pro' | 'enterprise';
+    billing_cycle: 'monthly' | 'yearly';
+    price: number;
+    last4?: string;
+  }) => {
+    const response = await fetch(`${API_BASE}/api/payments/subscribe/`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+      credentials: 'include',
+    });
+    return handleResponse<{ status: string; plan: string; billing_cycle: string; price: number }>(response);
+  },
 };
 
 // Export all APIs
@@ -409,6 +491,7 @@ export default {
   categories: categoriesAPI,
   cart: cartAPI,
   orders: ordersAPI,
+  dashboard: dashboardAPI,
   reviews: reviewsAPI,
   notifications: notificationsAPI,
   payments: paymentsAPI,
