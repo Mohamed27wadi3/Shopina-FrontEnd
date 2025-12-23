@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -23,8 +23,10 @@ export function LoginPage() {
       await login(email, password);
       toast.success("Connexion réussie !");
       navigate("/dashboard");
-    } catch (error) {
-      toast.error("Erreur de connexion. Veuillez réessayer.");
+    } catch (error: any) {
+      console.error("❌ Login error:", error);
+      const errorMsg = error.message || "Erreur de connexion. Veuillez réessayer.";
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

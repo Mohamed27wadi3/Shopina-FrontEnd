@@ -18,13 +18,13 @@ export const translations: Record<Language, Record<string, string>> = {
     settings: "Paramètres",
     logout: "Déconnexion",
     myAccount: "Mon compte",
-    
+
     // Homepage
     heroTitle: "La première plateforme e-commerce algérienne",
     heroSubtitle: "Shopina est la plateforme la plus simple pour créer votre boutique en ligne en Algérie",
     heroStartBtn: "Commencer gratuitement",
     algerian: "100% Algérienne",
-    
+
     // Features
     feature1Title: "Simple et intuitif",
     feature1Desc: "Interface facile à utiliser, pas besoin de connaissances techniques",
@@ -32,7 +32,7 @@ export const translations: Record<Language, Record<string, string>> = {
     feature2Desc: "Paiements sécurisés et données protégées",
     feature3Title: "Rapide",
     feature3Desc: "Votre boutique est en ligne en quelques minutes",
-    
+
     // Pricing
     starter: "Starter",
     professional: "Professional",
@@ -41,7 +41,7 @@ export const translations: Record<Language, Record<string, string>> = {
     monthlyPrice: "/mois",
     tryFree: "Essayer gratuitement",
     upgrade: "Passer à la formule",
-    
+
     // Buttons
     createShop: "Créer ma boutique",
     loginBtn: "Se connecter",
@@ -61,14 +61,14 @@ export const translations: Record<Language, Record<string, string>> = {
     settings: "الإعدادات",
     logout: "تسجيل الخروج",
     myAccount: "حسابي",
-    
+
     // Homepage
     heroTitle: "أول منصة تجارة إلكترونية جزائرية",
     heroSubtitle: "شوبينا، مستوحاة من Shopify، أبسط منصة لإنشاء متجرك الإلكتروني في الجزائر",
     heroStartBtn: "ابدأ مجانًا",
     algerian: "100% جزائرية",
     shopifyInspired: "مستوحاة من Shopify",
-    
+
     // Features
     feature1Title: "بسيط وسهل الاستخدام",
     feature1Desc: "واجهة سهلة الاستخدام، لا تحتاج إلى معرفة تقنية",
@@ -76,7 +76,7 @@ export const translations: Record<Language, Record<string, string>> = {
     feature2Desc: "دفع آمن وحماية البيانات",
     feature3Title: "سريع",
     feature3Desc: "متجرك الإلكتروني متاح في دقائق",
-    
+
     // Pricing
     starter: "مبتدئ",
     professional: "احترافي",
@@ -85,7 +85,7 @@ export const translations: Record<Language, Record<string, string>> = {
     monthlyPrice: "/شهر",
     tryFree: "جرّب مجانًا",
     upgrade: "الترقية إلى الخطة",
-    
+
     // Buttons
     createShop: "إنشاء متجري",
     loginBtn: "تسجيل الدخول",
@@ -104,6 +104,7 @@ interface ThemeLanguageContextType {
 const ThemeLanguageContext = createContext<ThemeLanguageContextType | undefined>(undefined);
 
 export function ThemeLanguageProvider({ children }: { children: React.ReactNode }) {
+  console.log("🎨 ThemeLanguageProvider rendering");
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem("theme");
     return (saved as Theme) || "light";
@@ -118,7 +119,7 @@ export function ThemeLanguageProvider({ children }: { children: React.ReactNode 
     localStorage.setItem("theme", theme);
     const html = document.documentElement;
     const body = document.body;
-    
+
     if (theme === "dark") {
       html.classList.add("dark");
       body.classList.add("dark");
@@ -126,7 +127,7 @@ export function ThemeLanguageProvider({ children }: { children: React.ReactNode 
       html.style.color = "#FFFFFF";
       body.style.backgroundColor = "#0A0A0A";
       body.style.color = "#FFFFFF";
-      
+
       // Force all text to be visible
       document.querySelectorAll("*").forEach((el) => {
         const computed = window.getComputedStyle(el);

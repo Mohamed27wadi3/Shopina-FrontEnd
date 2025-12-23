@@ -1,5 +1,8 @@
 import { ShoppingBag, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 const footerLinks = {
   produit: [
@@ -36,6 +39,8 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const { user } = useAuth();
+
   return (
     <footer className="bg-[#0A1A2F] text-white pt-20 pb-10">
       <div className="container mx-auto px-6">
@@ -54,6 +59,33 @@ export function Footer() {
             <p className="text-white/60 mb-6 max-w-sm">
               La plateforme e-commerce moderne qui vous permet de créer et gérer votre boutique en ligne en toute simplicité.
             </p>
+            {/* User Profile Section */}
+            {user && (
+              <div className="bg-white/5 rounded-lg p-3 mb-6 max-w-sm">
+                <Link to="/profile" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar.startsWith('http') ? user.avatar : `${API_BASE}${user.avatar}`}
+                      alt={user.first_name || user.username}
+                      className="w-10 h-10 rounded-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%230077FF' width='100' height='100'/%3E%3Ctext x='50' y='50' font-size='50' fill='white' text-anchor='middle' dy='.3em'%3E${(user.first_name || user.username || 'U').charAt(0).toUpperCase()}%3C/text%3E%3C/svg%3E`;
+                      }}
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] flex items-center justify-center text-sm font-bold">
+                      {(user.first_name || user.username || 'U').charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">
+                      {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name || user.username}
+                    </p>
+                    <p className="text-xs text-white/60">Voir mon profil</p>
+                  </div>
+                </Link>
+              </div>
+            )}
             <div className="flex items-center gap-3">
               {socialLinks.map((social, index) => {
                 const Icon = social.icon;

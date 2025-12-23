@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 export function SignupPage() {
   const [name, setName] = useState("");
@@ -31,8 +31,10 @@ export function SignupPage() {
       await signup(name, email, password);
       toast.success("Compte créé avec succès !");
       navigate("/dashboard");
-    } catch (error) {
-      toast.error("Erreur lors de la création du compte");
+    } catch (error: any) {
+      console.error("❌ Signup error details:", error);
+      const errorMsg = error.message || "Erreur lors de la création du compte";
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

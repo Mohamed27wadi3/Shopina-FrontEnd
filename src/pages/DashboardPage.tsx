@@ -63,7 +63,7 @@ export function DashboardPage() {
           {/* Welcome Section */}
           <div className="mb-8">
             <h1 className="text-[#0A1A2F] dark:text-white mb-2" style={{ fontSize: '36px', fontWeight: '800' }}>
-              Bienvenue, {user?.name} 👋
+              Bienvenue, {user?.first_name || user?.username} 👋
             </h1>
             <p className="text-[#0A1A2F]/60 dark:text-gray-400">
               Voici un aperçu de votre boutique aujourd'hui

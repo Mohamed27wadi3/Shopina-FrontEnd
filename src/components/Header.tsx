@@ -1,11 +1,29 @@
 import { Button } from "./ui/button";
 import { Link, useNavigate } from "react-router-dom";
-import { Moon, Sun, Globe } from "lucide-react";
+import { Moon, Sun, Globe, LogOut } from "lucide-react";
 import { useThemeLanguage } from "../context/ThemeLanguageContext";
+import { useAuth } from "../context/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 export function Header() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const { theme, language, setTheme, setLanguage, t } = useThemeLanguage();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <header className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-50 transition-colors">
@@ -13,7 +31,10 @@ export function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <img src="/shopina logo sans background.png" alt="Shopina" className="h-9 w-auto" />
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] flex items-center justify-center text-white font-bold text-lg">
+              S
+            </div>
+            <span className="font-bold text-[#0A1A2F] dark:text-white hidden sm:inline">Shopina</span>
           </Link>
 
           {/* Navigation */}
@@ -59,19 +80,61 @@ export function Header() {
               <span className="ml-1 text-xs font-bold">{language === "fr" ? "FR" : "AR"}</span>
             </Button>
 
-            <Button 
-              onClick={() => navigate("/login")}
-              variant="ghost" 
-              className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/5 dark:hover:bg-[#5AC8FA]/10"
-            >
-              {t("loginBtn")}
-            </Button>
-            <Button 
-              onClick={() => navigate("/signup")}
-              className="bg-[#0077FF] hover:bg-[#0077FF]/90 dark:bg-[#5AC8FA] dark:hover:bg-[#5AC8FA]/90 text-white dark:text-black rounded-xl px-6 shadow-lg shadow-[#0077FF]/20 transition-colors"
-            >
-              {t("signup")}
-            </Button>
+            {/* User Menu or Auth Buttons */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-xl transition-colors">
+                    <Avatar className="w-8 h-8">
+                      {user?.avatar && (
+                        <AvatarImage
+                          src={user.avatar.startsWith('http') ? user.avatar : `${API_BASE}${user.avatar}`}
+                          alt={user.first_name || user.username}
+                          className="object-cover"
+                        />
+                      )}
+                      <AvatarFallback className="bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] text-white text-xs" style={{ fontWeight: '700' }}>
+                        {(user?.first_name || user?.username || 'U').charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium text-[#0A1A2F] dark:text-gray-100 hidden sm:inline">
+                      {user?.first_name || user?.username}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 rounded-xl">
+                  <DropdownMenuLabel>{t("myAccount")}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                    {t("dashboard")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    {t("profile")}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {t("logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button 
+                  onClick={() => navigate("/login")}
+                  variant="ghost" 
+                  className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/5 dark:hover:bg-[#5AC8FA]/10"
+                >
+                  {t("loginBtn")}
+                </Button>
+                <Button 
+                  onClick={() => navigate("/signup")}
+                  className="bg-[#0077FF] hover:bg-[#0077FF]/90 dark:bg-[#5AC8FA] dark:hover:bg-[#5AC8FA]/90 text-white dark:text-black rounded-xl px-6 shadow-lg shadow-[#0077FF]/20 transition-colors"
+                >
+                  {t("signup")}
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

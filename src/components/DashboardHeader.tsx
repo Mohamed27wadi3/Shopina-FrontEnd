@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Bell, Search, Moon, Sun, Globe } from "lucide-react";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -14,6 +14,8 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useThemeLanguage } from "../context/ThemeLanguageContext";
 import { useNavigate } from "react-router-dom";
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 export function DashboardHeader() {
   const { user, logout } = useAuth();
@@ -31,7 +33,10 @@ export function DashboardHeader() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <img src="/shopina logo sans background.png" alt="Shopina" className="h-9 w-auto" />
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] flex items-center justify-center text-white font-bold text-lg">
+              S
+            </div>
+            <span className="font-bold text-[#0A1A2F] dark:text-white hidden sm:inline">Shopina</span>
           </Link>
 
           {/* Search */}
@@ -80,14 +85,21 @@ export function DashboardHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-xl transition-colors">
-                  <Avatar className="w-10 h-10 bg-gradient-to-br from-[#0077FF] to-[#5AC8FA]">
-                    <AvatarFallback className="text-white" style={{ fontWeight: '700' }}>
-                      {user?.name.split(' ').map(n => n[0]).join('')}
+                  <Avatar className="w-10 h-10">
+                    {user?.avatar && (
+                      <AvatarImage
+                        src={user.avatar.startsWith('http') ? user.avatar : `${API_BASE}${user.avatar}`}
+                        alt={user.first_name || user.username}
+                        className="object-cover"
+                      />
+                    )}
+                    <AvatarFallback className="bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] text-white" style={{ fontWeight: '700' }}>
+                      {(user?.first_name || user?.username || 'U').charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-left hidden lg:block">
                     <p className="text-[#0A1A2F] dark:text-gray-100 text-sm" style={{ fontWeight: '600' }}>
-                      {user?.name}
+                      {user?.first_name || user?.username}
                     </p>
                     <p className="text-[#0A1A2F]/60 dark:text-gray-400 text-xs">
                       Plan {user?.plan}
