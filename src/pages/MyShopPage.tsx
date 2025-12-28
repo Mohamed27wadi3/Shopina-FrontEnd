@@ -76,7 +76,18 @@ export function MyShopPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        toast.success('Boutique créée avec succès');
+        toast.success('🎊 Boutique créée avec succès !', {
+          duration: 4000,
+          style: {
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: '600',
+            padding: '16px 24px',
+            borderRadius: '16px',
+            boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+          }
+        });
         setShop(data);
       } else {
         const data = await res.json().catch(() => ({}));

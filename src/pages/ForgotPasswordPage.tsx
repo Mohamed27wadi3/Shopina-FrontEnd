@@ -4,6 +4,7 @@ import { ShoppingBag, Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { Header } from "../components/Header";
 import { toast } from "sonner";
 
 export function ForgotPasswordPage() {
@@ -30,7 +31,18 @@ export function ForgotPasswordPage() {
       }
 
       setIsEmailSent(true);
-      toast.success("Email envoyé ! Vérifiez votre boîte de réception.");
+      toast.success("📧 Email envoyé ! Vérifiez votre boîte de réception.", {
+        duration: 5000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
     } catch (error: any) {
       console.error("❌ Password reset error:", error);
       toast.error(error.message || "Erreur lors de l'envoi. Veuillez réessayer.");
@@ -40,7 +52,9 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0077FF]/5 via-[#5AC8FA]/5 to-white dark:from-[#0A0A0A] dark:via-[#1A1A1A] dark:to-[#0A0A0A] flex items-center justify-center p-6">
+    <>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-br from-[#0077FF]/5 via-[#5AC8FA]/5 to-white dark:from-[#0A0A0A] dark:via-[#1A1A1A] dark:to-[#0A0A0A] flex items-center justify-center p-6">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-gradient-to-br from-[#0077FF]/10 to-[#5AC8FA]/10 blur-3xl" />
@@ -53,7 +67,7 @@ export function ForgotPasswordPage() {
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] flex items-center justify-center">
             <ShoppingBag className="w-6 h-6 text-white" />
           </div>
-          <span className="text-[#0A1A2F] dark:text-white tracking-tight" style={{ fontSize: '28px', fontWeight: '700' }}>
+          <span className="text-[#0A1A2F] dark:text-white tracking-tight text-[28px] font-bold">
             Shopina
           </span>
         </Link>
@@ -63,7 +77,7 @@ export function ForgotPasswordPage() {
           {!isEmailSent ? (
             <>
               <div className="text-center mb-8">
-                <h1 className="text-[#0A1A2F] dark:text-white mb-2" style={{ fontSize: '32px', fontWeight: '800' }}>
+                <h1 className="text-[#0A1A2F] dark:text-white mb-2 text-[32px] font-extrabold">
                   Mot de passe oublié ?
                 </h1>
                 <p className="text-[#0A1A2F]/60 dark:text-gray-400">
@@ -121,7 +135,7 @@ export function ForgotPasswordPage() {
                 </div>
                 
                 <div>
-                  <h1 className="text-[#0A1A2F] dark:text-white mb-2" style={{ fontSize: '28px', fontWeight: '800' }}>
+                  <h1 className="text-[#0A1A2F] dark:text-white mb-2 text-[28px] font-extrabold">
                     Email envoyé !
                   </h1>
                   <p className="text-[#0A1A2F]/60 dark:text-gray-400">
@@ -174,5 +188,6 @@ export function ForgotPasswordPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

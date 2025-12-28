@@ -82,7 +82,7 @@ const plans = [
 
 export function PricingPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, updateProfile, refreshProfile } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number; period: string; key: "free" | "starter" | "pro" | "enterprise" } | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -110,7 +110,22 @@ export function PricingPage() {
     setIsSubmitting(true);
     try {
       await paymentsAPI.subscribe({ plan: "free", billing_cycle: "monthly", price: prices.free });
-      toast.success("Plan gratuit activé");
+      
+      // Rafraîchir le profil depuis le serveur
+      await refreshProfile();
+      
+      toast.success("🎉 Plan gratuit activé avec succès !", {
+        duration: 3000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
       navigate("/dashboard");
     } catch (err: any) {
       toast.error(err?.message || "Activation impossible");

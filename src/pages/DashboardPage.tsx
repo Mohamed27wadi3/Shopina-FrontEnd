@@ -180,10 +180,26 @@ export function DashboardPage() {
 
         <main className="flex-1 p-8 dark:bg-gray-950">
           <div className="mb-8">
-            <h1 className="text-[#0A1A2F] dark:text-white mb-2" style={{ fontSize: "36px", fontWeight: "800" }}>
-              Bienvenue, {user?.first_name || user?.username} 👋
-            </h1>
-            <p className="text-[#0A1A2F]/60 dark:text-gray-400">Voici un aperçu de votre boutique aujourd'hui</p>
+            {/* Mapper les plans français aux noms anglais */}
+            {(() => {
+              const planMap: Record<string, string> = {
+                'free': 'FREE',
+                'starter': 'STARTER',
+                'pro': 'GOLD',
+                'enterprise': 'ENTERPRISE'
+              };
+              const userPlan = user?.plan || 'free';
+              const planLabel = planMap[userPlan] || userPlan.toUpperCase();
+              
+              return (
+                <>
+                  <h1 className="text-[#0A1A2F] dark:text-white mb-2" style={{ fontSize: "36px", fontWeight: "800" }}>
+                    Bienvenue, {user?.first_name || user?.username} <span className="text-sm bg-gradient-to-r from-[#0077FF] to-[#5AC8FA] text-white px-3 py-1 rounded-full" style={{ fontWeight: '600' }}>({planLabel})</span>
+                  </h1>
+                  <p className="text-[#0A1A2F]/60 dark:text-gray-400">Voici un aperçu de votre boutique aujourd'hui</p>
+                </>
+              );
+            })()}
           </div>
 
           {/* Errors are handled silently for a professional UX */}

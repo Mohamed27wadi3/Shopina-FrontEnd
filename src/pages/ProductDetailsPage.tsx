@@ -57,7 +57,18 @@ export function ProductDetailsPage() {
     }
     
     localStorage.setItem('cart', JSON.stringify(cart));
-    toast.success(`${quantity} produit(s) ajouté(s) au panier`);
+    toast.success(`🛒 ${quantity} produit(s) ajouté(s) au panier !`, {
+      duration: 3000,
+      style: {
+        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        color: 'white',
+        fontSize: '16px',
+        fontWeight: '600',
+        padding: '16px 24px',
+        borderRadius: '16px',
+        boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+      }
+    });
     setQuantity(1);
   };
 

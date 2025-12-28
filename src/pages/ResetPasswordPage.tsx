@@ -4,6 +4,7 @@ import { ShoppingBag, Lock, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { Header } from "../components/Header";
 import { toast } from "sonner";
 
 export function ResetPasswordPage() {
@@ -59,7 +60,18 @@ export function ResetPasswordPage() {
       }
 
       setIsSuccess(true);
-      toast.success("Mot de passe réinitialisé avec succès !");
+      toast.success("🔐 Mot de passe réinitialisé avec succès !", {
+        duration: 4000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
       
       // Redirect to login after 3 seconds
       setTimeout(() => {
@@ -74,7 +86,9 @@ export function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0077FF]/5 via-[#5AC8FA]/5 to-white dark:from-[#0A0A0A] dark:via-[#1A1A1A] dark:to-[#0A0A0A] flex items-center justify-center p-6">
+    <>
+      <Header />
+      <div className="min-h-screen bg-gradient-to-br from-[#0077FF]/5 via-[#5AC8FA]/5 to-white dark:from-[#0A0A0A] dark:via-[#1A1A1A] dark:to-[#0A0A0A] flex items-center justify-center p-6">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-gradient-to-br from-[#0077FF]/10 to-[#5AC8FA]/10 blur-3xl" />
@@ -218,5 +232,6 @@ export function ResetPasswordPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

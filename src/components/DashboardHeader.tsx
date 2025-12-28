@@ -3,6 +3,7 @@ import { Search, Moon, Sun, Globe } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +33,7 @@ export function DashboardHeader() {
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] flex items-center justify-center text-white font-bold text-lg">
               S
             </div>
@@ -53,6 +54,17 @@ export function DashboardHeader() {
 
           {/* Right Section */}
           <div className="flex items-center gap-4">
+            {/* Home Button */}
+            <Link to="/">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[#0A1A2F] dark:text-gray-100 hover:text-[#0077FF] dark:hover:text-[#5AC8FA] hover:bg-[#0077FF]/5 dark:hover:bg-[#5AC8FA]/10 rounded-lg font-semibold"
+              >
+                🏠 Page Principale
+              </Button>
+            </Link>
+
             {/* Notifications */}
             <NotificationBell />
 
@@ -90,12 +102,12 @@ export function DashboardHeader() {
                         className="object-cover"
                       />
                     )}
-                    <AvatarFallback className="bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] text-white" style={{ fontWeight: "700" }}>
+                    <AvatarFallback className="bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] text-white font-bold">
                       {(user?.first_name || user?.username || "U").charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-left hidden lg:block">
-                    <p className="text-[#0A1A2F] dark:text-gray-100 text-sm" style={{ fontWeight: "600" }}>
+                    <p className="text-[#0A1A2F] dark:text-gray-100 text-sm font-semibold">
                       {user?.first_name || user?.username}
                     </p>
                     <p className="text-[#0A1A2F]/60 dark:text-gray-400 text-xs">
@@ -108,17 +120,22 @@ export function DashboardHeader() {
                 <DropdownMenuLabel>{t("myAccount")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  {t("profile")}
+                  👤 {t("profile")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                  {t("dashboard")}
+                <DropdownMenuItem onClick={() => navigate("/my-shop")}>
+                  ⚙️ {t("settings")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  {t("settings")}
+                <DropdownMenuItem
+                  onClick={() => {
+                    toast.info("Redirection vers la page principale");
+                    navigate("/");
+                  }}
+                >
+                  🏠 Page principale
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                  {t("logout")}
+                  🚪 {t("logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

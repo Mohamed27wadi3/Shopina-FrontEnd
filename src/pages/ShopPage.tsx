@@ -66,7 +66,18 @@ export function ShopPage() {
     const newCart = [...cart, product.id];
     setCart(newCart);
     localStorage.setItem('cart', JSON.stringify(newCart));
-    toast.success(`${product.name} ajouté au panier`);
+    toast.success(`🛒 ${product.name} ajouté au panier !`, {
+      duration: 3000,
+      style: {
+        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        color: 'white',
+        fontSize: '16px',
+        fontWeight: '600',
+        padding: '16px 24px',
+        borderRadius: '16px',
+        boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+      }
+    });
   };
 
   return (

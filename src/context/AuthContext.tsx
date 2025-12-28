@@ -26,6 +26,7 @@ interface AuthContextType {
   signup: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => void;
+  refreshProfile: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
 }
 
@@ -286,8 +287,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) setUser({ ...user, ...data });
   };
 
+  const refreshProfile = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/users/profile/`, { 
+        headers: { ...getAuthHeaders() },
+        credentials: 'include',
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log('✅ Profil rafraîchi depuis le serveur:', data.plan);
+        setUser(data);
+      } else {
+        console.error('❌ Erreur rafraîchissement profil:', res.status);
+      }
+    } catch (error) {
+      console.error('❌ Erreur rafraîchissement profil:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, signup, logout, updateProfile, refreshToken }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, signup, logout, updateProfile, refreshProfile, refreshToken }}>
       {children}
     </AuthContext.Provider>
   );

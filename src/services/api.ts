@@ -40,6 +40,23 @@ async function handleResponse<T>(response: Response): Promise<T> {
       throw new Error((error as any).detail || (error as any).message || 'Request failed');
     } else {
       const text = hasBody ? await response.text().catch(() => '') : '';
+      
+      // Détecter erreur HTML Django
+      if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
+        console.error('Django error page received:', text.substring(0, 200));
+        
+        if (response.status === 404) {
+          throw new Error("Endpoint API introuvable. Vérifiez que le backend est lancé.");
+        } else if (response.status === 401) {
+          throw new Error("Authentification requise. Veuillez vous reconnecter.");
+        } else if (response.status === 403) {
+          throw new Error("Accès refusé. Permissions insuffisantes.");
+        } else if (response.status === 500) {
+          throw new Error("Erreur serveur. Vérifiez les logs Django.");
+        }
+        throw new Error(`Erreur ${response.status}: Problème serveur`);
+      }
+      
       throw new Error(text || 'Request failed');
     }
   }

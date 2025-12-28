@@ -106,7 +106,18 @@ export function ProfilePage() {
         return;
       }
 
-      toast.success('Mot de passe changé avec succès.');
+      toast.success('🔐 Mot de passe changé avec succès !', {
+        duration: 4000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
       // Refresh profile to get last_password_change
       const profileRes = await fetch(`${API_BASE}/api/users/profile/`, {
         headers: { 'Authorization': `Bearer ${token}` },
@@ -182,7 +193,18 @@ export function ProfilePage() {
 
       const data = await res.json();
       updateProfile(data);
-      toast.success("Modification sauvegardée ✓");
+      toast.success("✅ Modification sauvegardée avec succès !", {
+        duration: 3000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
     } catch (error: any) {
       toast.error(error.message || "Erreur lors de la sauvegarde");
     } finally {
@@ -209,7 +231,18 @@ export function ProfilePage() {
     await saveProfileField('shop_slug', slug);
 
     setIsEditing(false);
-    toast.success("Profil mis à jour avec succès !");
+    toast.success("✨ Profil mis à jour avec succès !", {
+      duration: 3000,
+      style: {
+        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        color: 'white',
+        fontSize: '16px',
+        fontWeight: '600',
+        padding: '16px 24px',
+        borderRadius: '16px',
+        boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+      }
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -293,7 +326,18 @@ export function ProfilePage() {
         shop_name: data.shop_name,
       });
       
-      toast.success("Avatar mis à jour avec succès !");
+      toast.success("🖼️ Avatar mis à jour avec succès !", {
+        duration: 3000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
     } catch (error: any) {
       console.error('❌ Avatar upload error:', error);
       toast.error(error.message || "Erreur lors de l'upload de l'avatar");
@@ -318,7 +362,18 @@ export function ProfilePage() {
       if (body.debug_otp) {
         toast.success(`DEBUG OTP: ${body.debug_otp}`);
       } else {
-        toast.success('OTP envoyé à votre email.');
+        toast.success('📱 Code OTP envoyé à votre email !', {
+          duration: 4000,
+          style: {
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            color: 'white',
+            fontSize: '16px',
+            fontWeight: '600',
+            padding: '16px 24px',
+            borderRadius: '16px',
+            boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+          }
+        });
       }
       setShow2faVerify(true);
     } catch (err: any) {
@@ -356,7 +411,18 @@ export function ProfilePage() {
         updateProfile(profileData);
       }
 
-      toast.success('OTP vérifié, 2FA activée.');
+      toast.success('🔒 2FA activée avec succès !', {
+        duration: 4000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
       setShow2faVerify(false);
       setTwoFaOtp('');
     } catch (err: any) {
@@ -382,7 +448,18 @@ export function ProfilePage() {
       }
       const data = await res.json();
       updateProfile(data);
-      toast.success('2FA désactivée.');
+      toast.success('🔓 2FA désactivée avec succès !', {
+        duration: 3000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
     } catch (err: any) {
       toast.error(err?.message || 'Erreur lors de la désactivation');
     } finally {

@@ -39,7 +39,18 @@ function CheckoutForm({ orderId, clientSecret }: { orderId: number | null; clien
       setMessage(res.error.message || 'Le paiement a échoué');
     } else if (res.paymentIntent && res.paymentIntent.status === 'succeeded') {
       setMessage('Paiement réussi ! Merci pour votre commande.');
-      toast.success('Paiement accepté');
+      toast.success('✅ Paiement accepté avec succès !', {
+        duration: 4000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
     }
     setLoading(false);
   };
@@ -183,7 +194,18 @@ export default function CheckoutPage() {
       const data = await intentRes.json();
       setClientSecret(data.client_secret);
       localStorage.removeItem('cart');
-      toast.success('Commande créée');
+      toast.success('🎉 Commande créée avec succès !', {
+        duration: 4000,
+        style: {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          fontSize: '16px',
+          fontWeight: '600',
+          padding: '16px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+        }
+      });
     } catch (error: any) {
       console.error(error);
       toast.error(error.message);
