@@ -9,6 +9,7 @@ import { PricingPage } from "./pages/PricingPage";
 import { TemplatesPage } from "./pages/TemplatesPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { OrdersPage } from "./pages/OrdersPage";
+import { ClientsPage } from "./pages/ClientsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { ShopPage } from "./pages/ShopPage";
 import { ProductDetailsPage } from "./pages/ProductDetailsPage";
@@ -71,6 +72,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute fallback={<AuthLoading />}>
             <OrdersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/clients"
+        element={
+          <ProtectedRoute fallback={<AuthLoading />}>
+            <ClientsPage />
           </ProtectedRoute>
         }
       />

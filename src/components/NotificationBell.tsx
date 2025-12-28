@@ -90,12 +90,12 @@ export function NotificationBell() {
           type="button"
           variant="ghost"
           size="icon"
-          className="relative rounded-xl transition-colors hover:bg-[#0077FF]/8 dark:hover:bg-[#5AC8FA]/15 focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50"
+          className="relative rounded-xl transition-all hover:bg-[#0077FF]/10 dark:hover:bg-[#5AC8FA]/15 focus-visible:ring-2 focus-visible:ring-[#0077FF]/50 dark:focus-visible:ring-[#5AC8FA]/50 hover:scale-105 active:scale-95"
         >
-          <Bell className="w-5 h-5 text-[#0A1A2F] dark:text-gray-100" />
+          <Bell className={`w-5 h-5 text-[#0A1A2F] dark:text-gray-100 transition-transform ${unreadCount > 0 ? 'animate-wiggle' : ''}`} />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[11px] leading-[18px] rounded-full text-center font-semibold">
-              {unreadCount}
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1.5 bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] leading-[20px] rounded-full text-center font-bold shadow-lg shadow-red-500/50 animate-pulse border-2 border-white dark:border-gray-900">
+              {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Button>

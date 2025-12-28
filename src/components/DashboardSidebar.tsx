@@ -19,7 +19,7 @@ const menuItems = [
   // Route Commandes to React orders page (same interface)
   { icon: ShoppingCart, label: "Commandes", path: "/orders" },
   { icon: Package, label: "Produits", path: "/dashboard" },
-  { icon: Users, label: "Clients", externalHref: `${API_ORIGIN}/clients/` },
+  { icon: Users, label: "Clients", path: "/clients" },
   { icon: BarChart3, label: "Statistiques", path: "/dashboard" },
   { icon: Store, label: "Ma boutique", externalHref: `${API_ORIGIN}/my-shop/` },
   { icon: CreditCard, label: "Paiements", path: "/pricing" },

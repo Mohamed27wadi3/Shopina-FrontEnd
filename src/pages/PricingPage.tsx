@@ -121,6 +121,27 @@ export function PricingPage() {
 
   const handleSelectPlan = (plan: typeof plans[number]) => {
     const key = normalizePlan(plan.name);
+    
+    // Toast de confirmation pour tous les plans
+    const planEmojis = {
+      free: "🎉",
+      starter: "🚀",
+      pro: "⭐",
+      enterprise: "👑"
+    };
+    
+    toast.success(`${planEmojis[key]} Plan ${plan.name} sélectionné !`, {
+      duration: 3000,
+      style: {
+        background: "linear-gradient(135deg, #0077FF 0%, #5AC8FA 100%)",
+        color: "white",
+        fontSize: "16px",
+        fontWeight: "600",
+        padding: "16px 20px",
+        borderRadius: "12px"
+      }
+    });
+    
     if (key === "free") {
       handleActivateFree();
       return;

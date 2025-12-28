@@ -33,8 +33,12 @@ export function Header() {
     <header className="border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-50 transition-colors">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
+          {/* Logo - Cliquable vers accueil */}
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+            aria-label="Retour à l'accueil"
+          >
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] flex items-center justify-center text-white font-bold text-lg">
               S
             </div>

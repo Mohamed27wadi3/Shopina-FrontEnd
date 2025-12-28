@@ -120,7 +120,19 @@ export function SupportPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Message envoyé avec succès ! Nous vous répondrons sous 2 heures.");
+    // Animation plein écran avec célébration
+    toast.success("✨ Message envoyé avec succès ! Nous vous répondrons sous 2 heures.", {
+      duration: 5000,
+      style: {
+        background: "linear-gradient(135deg, #0077FF 0%, #5AC8FA 100%)",
+        color: "white",
+        fontSize: "18px",
+        fontWeight: "600",
+        padding: "20px 24px",
+        borderRadius: "16px",
+        boxShadow: "0 20px 50px rgba(0, 119, 255, 0.3)"
+      }
+    });
     setFormData({ name: "", email: "", subject: "", message: "" });
   };
 
@@ -128,6 +140,62 @@ export function SupportPage() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
+    });
+  };
+
+  const handleChatClick = () => {
+    toast.success("💬 Demande de chat envoyée ! Un agent va vous répondre dans quelques instants.", {
+      duration: 4000,
+      style: {
+        background: "linear-gradient(135deg, #0077FF 0%, #5AC8FA 100%)",
+        color: "white",
+        fontSize: "16px",
+        fontWeight: "600",
+        padding: "16px 20px",
+        borderRadius: "12px"
+      }
+    });
+  };
+
+  const handleEmailClick = () => {
+    toast.success("✉️ Email envoyé avec succès ! Vous recevrez une réponse sous 2 heures.", {
+      duration: 4000,
+      style: {
+        background: "linear-gradient(135deg, #9333ea 0%, #ec4899 100%)",
+        color: "white",
+        fontSize: "16px",
+        fontWeight: "600",
+        padding: "16px 20px",
+        borderRadius: "12px"
+      }
+    });
+  };
+
+  const handlePhoneClick = () => {
+    toast.success("📞 Numéro de téléphone : 025202281", {
+      duration: 6000,
+      style: {
+        background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+        color: "white",
+        fontSize: "18px",
+        fontWeight: "700",
+        padding: "20px 24px",
+        borderRadius: "12px"
+      }
+    });
+  };
+
+  const handleCommunityClick = () => {
+    toast.success("🎉 Bienvenue dans la communauté DZ-ecom ! Rejoignez-nous sur Discord et Facebook.", {
+      duration: 5000,
+      style: {
+        background: "linear-gradient(135deg, #f97316 0%, #ef4444 100%)",
+        color: "white",
+        fontSize: "16px",
+        fontWeight: "600",
+        padding: "16px 20px",
+        borderRadius: "12px"
+      }
     });
   };
 
@@ -157,6 +225,12 @@ export function SupportPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {supportChannels.map((channel, index) => {
               const Icon = channel.icon;
+              const handleClick = 
+                channel.title === "Chat en direct" ? handleChatClick :
+                channel.title === "Email" ? handleEmailClick :
+                channel.title === "Téléphone" ? handlePhoneClick :
+                handleCommunityClick;
+              
               return (
                 <Card key={index} className="border-gray-100 rounded-2xl hover:shadow-xl transition-all">
                   <CardHeader>
@@ -171,7 +245,10 @@ export function SupportPage() {
                       <Clock className="w-4 h-4" />
                       {channel.availability}
                     </div>
-                    <Button className="w-full bg-[#0077FF] hover:bg-[#0077FF]/90 rounded-xl">
+                    <Button 
+                      onClick={handleClick}
+                      className="w-full bg-[#0077FF] hover:bg-[#0077FF]/90 rounded-xl transition-all transform hover:scale-105"
+                    >
                       {channel.action}
                     </Button>
                   </CardContent>

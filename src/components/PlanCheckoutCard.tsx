@@ -40,6 +40,7 @@ export function PlanCheckoutCard({ plan, onClose, onSuccess }: PlanCheckoutCardP
   const [isFlipped, setIsFlipped] = useState(false);
   const [activeField, setActiveField] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cardTheme, setCardTheme] = useState<"default" | "dahabia">("default");
 
   const cardRef = useRef<HTMLDivElement | null>(null);
 
@@ -108,8 +109,64 @@ export function PlanCheckoutCard({ plan, onClose, onSuccess }: PlanCheckoutCardP
         last4: cardNumber.replace(/\D/g, "").slice(-4) || undefined,
       } as const;
       await paymentsAPI.subscribe(payload);
-      toast.success("Abonnement activé");
-      onSuccess();
+      
+      // Afficher notification de succès plein écran avec confetti
+      const successDiv = document.createElement('div');
+      successDiv.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-[#0077FF]/95 via-[#5AC8FA]/95 to-[#0077FF]/95 backdrop-blur-sm animate-in fade-in duration-300';
+      successDiv.innerHTML = `
+        <div class="text-center text-white p-12 animate-in zoom-in-95 duration-500">
+          <div class="text-8xl mb-6 animate-bounce">🎉</div>
+          <h2 class="text-5xl font-extrabold mb-4">Félicitations !</h2>
+          <p class="text-2xl mb-2 opacity-90">Votre abonnement ${displayedPlan.name} est activé</p>
+          <p class="text-lg opacity-75">Redirection vers votre tableau de bord...</p>
+          <div class="mt-8 flex justify-center gap-3">
+            <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+            <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+            <div class="w-3 h-3 bg-white rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(successDiv);
+      
+      // Effet confetti avec emojis
+      const confettiEmojis = ['🎉', '✨', '⭐', '🎊', '💫', '🌟'];
+      for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.textContent = confettiEmojis[Math.floor(Math.random() * confettiEmojis.length)];
+          confetti.style.cssText = `
+            position: fixed;
+            top: -50px;
+            left: ${Math.random() * 100}%;
+            font-size: ${Math.random() * 30 + 20}px;
+            animation: fall ${Math.random() * 2 + 2}s linear;
+            pointer-events: none;
+            z-index: 10000;
+          `;
+          successDiv.appendChild(confetti);
+          setTimeout(() => confetti.remove(), 4000);
+        }, i * 50);
+      }
+      
+      // Ajouter animation CSS pour la chute
+      if (!document.getElementById('confetti-animation')) {
+        const style = document.createElement('style');
+        style.id = 'confetti-animation';
+        style.textContent = `
+          @keyframes fall {
+            to {
+              transform: translateY(100vh) rotate(360deg);
+              opacity: 0;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      setTimeout(() => {
+        successDiv.remove();
+        onSuccess();
+      }, 3000);
     } catch (err: any) {
       toast.error(err?.message || "Paiement refusé");
     } finally {
@@ -136,28 +193,64 @@ export function PlanCheckoutCard({ plan, onClose, onSuccess }: PlanCheckoutCardP
 
         <div className="grid lg:grid-cols-2 gap-6 p-6">
           <div className="relative" style={{ perspective: "1400px" }}>
+            {/* Toggle thème de carte */}
+            <div className="mb-4 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setCardTheme("default")}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition ${
+                  cardTheme === "default" 
+                    ? "bg-[#0077FF] text-white" 
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                💳 Carte Classic
+              </button>
+              <button
+                type="button"
+                onClick={() => setCardTheme("dahabia")}
+                className={`flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition ${
+                  cardTheme === "dahabia" 
+                    ? "bg-gradient-to-r from-[#006B3F] to-[#007F4A] text-[#FFD700]" 
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                🇩🇿 Dahabia Gold
+              </button>
+            </div>
+            
             <div
               ref={cardRef}
               className={`relative w-full h-64 transition-transform duration-500 [transform-style:preserve-3d] ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
             >
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#0A1A2F] via-[#0F2A4D] to-[#0A1A2F] text-white p-6 shadow-2xl border border-white/10" style={{ backfaceVisibility: "hidden" }}>
+              {/* Front de la carte avec thème sélectionnable */}
+              <div 
+                className={`absolute inset-0 rounded-2xl text-white p-6 shadow-2xl border ${
+                  cardTheme === "dahabia" 
+                    ? "bg-gradient-to-br from-[#006B3F] via-[#007F4A] to-[#006B3F] border-[#FFD700]/20" 
+                    : "bg-gradient-to-br from-[#0A1A2F] via-[#0F2A4D] to-[#0A1A2F] border-white/10"
+                }`} 
+                style={{ backfaceVisibility: "hidden" }}
+              >
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-xs uppercase tracking-[0.3em] text-white/60">Shopina Secure</span>
-                  <div className="flex gap-2 items-center text-white/70 text-xs">
+                  <span className={`text-xs uppercase tracking-[0.3em] ${cardTheme === "dahabia" ? "text-[#FFD700]" : "text-white/60"}`}>
+                    {cardTheme === "dahabia" ? "Dahabia Gold" : "Shopina Secure"}
+                  </span>
+                  <div className={`flex gap-2 items-center text-xs ${cardTheme === "dahabia" ? "text-[#FFD700]/90" : "text-white/70"}`}>
                     <Lock className="w-4 h-4" />
                     TLS 1.2
                   </div>
                 </div>
-                <div className={`mb-8 text-2xl tracking-[0.25em] ${activeField === "number" ? "text-[#5AC8FA]" : "text-white"}`}>
+                <div className={`mb-8 text-2xl tracking-[0.25em] ${activeField === "number" ? (cardTheme === "dahabia" ? "text-[#FFD700]" : "text-[#5AC8FA]") : "text-white"}`}>
                   {cardNumberPreview}
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <div>
-                    <p className="text-white/60 text-[10px] mb-1">Titulaire</p>
-                    <p className={`text-base ${activeField === "name" ? "text-[#5AC8FA]" : "text-white"}`}>{cardName || "Votre nom"}</p>
+                    <p className={`text-[10px] mb-1 ${cardTheme === "dahabia" ? "text-[#FFD700]/80" : "text-white/60"}`}>Titulaire</p>
+                    <p className={`text-base ${activeField === "name" ? (cardTheme === "dahabia" ? "text-[#FFD700]" : "text-[#5AC8FA]") : "text-white"}`}>{cardName || "Votre nom"}</p>
                   </div>
-                  <div className={`${activeField === "exp" ? "text-[#5AC8FA]" : "text-white"}`}>
-                    <p className="text-white/60 text-[10px] mb-1">Expire</p>
+                  <div className={`${activeField === "exp" ? (cardTheme === "dahabia" ? "text-[#FFD700]" : "text-[#5AC8FA]") : "text-white"}`}>
+                    <p className={`text-[10px] mb-1 ${cardTheme === "dahabia" ? "text-[#FFD700]/80" : "text-white/60"}`}>Expire</p>
                     <p className="text-base">{expPreview}</p>
                   </div>
                 </div>

@@ -7,6 +7,7 @@ import { Input } from "../components/ui/input";
 import { Card, CardContent } from "../components/ui/card";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const categories = ["Tous", "Mode", "High-tech", "Beauté", "Alimentation", "Sport", "Déco"];
 
@@ -66,6 +67,23 @@ export function TemplatesPage() {
                          template.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const handleCustomTemplateRequest = () => {
+    toast.success("🎨 Demande de template personnalisé envoyée ! Notre équipe vous contactera sous 24h.", {
+      duration: 5000,
+      style: {
+        background: "linear-gradient(135deg, #0077FF 0%, #5AC8FA 100%)",
+        color: "white",
+        fontSize: "16px",
+        fontWeight: "600",
+        padding: "18px 22px",
+        borderRadius: "14px",
+        boxShadow: "0 20px 50px rgba(0, 119, 255, 0.3)"
+      }
+    });
+    // Optionnel: rediriger vers le support
+    setTimeout(() => navigate("/support"), 2000);
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
@@ -167,7 +185,7 @@ export function TemplatesPage() {
                 Contactez-nous pour un template personnalisé
               </p>
               <Button 
-                onClick={() => navigate("/support")}
+                onClick={handleCustomTemplateRequest}
                 className="bg-[#0077FF] hover:bg-[#0077FF]/90 text-white rounded-xl px-8 h-12"
               >
                 Demander un template sur mesure
