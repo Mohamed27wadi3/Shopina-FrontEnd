@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ShoppingBag, Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { Footer } from "../components/Footer";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Header } from "../components/Header";
@@ -187,6 +188,7 @@ export function ForgotPasswordPage() {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
     </>
   );

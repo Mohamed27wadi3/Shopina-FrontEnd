@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShoppingBag, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { Footer } from "../components/Footer";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Header } from "../components/Header";
@@ -242,6 +243,7 @@ export function LoginPage() {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
     </>
   );

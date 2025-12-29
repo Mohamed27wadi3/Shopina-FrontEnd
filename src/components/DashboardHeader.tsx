@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Moon, Sun, Globe } from "lucide-react";
+import { Search, Moon, Sun, Globe, User, Settings, Home, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -93,7 +93,7 @@ export function DashboardHeader() {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-xl transition-colors">
+                <button className="flex items-center gap-3 hover:bg-[#0077FF]/10 dark:hover:bg-[#5AC8FA]/20 p-2 rounded-xl transition-all hover:shadow-md border-2 border-transparent hover:border-[#0077FF]/20">
                   <Avatar className="w-10 h-10">
                     {user?.avatar && (
                       <AvatarImage
@@ -116,26 +116,42 @@ export function DashboardHeader() {
                   </div>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-xl">
-                <DropdownMenuLabel>{t("myAccount")}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  👤 {t("profile")}
+              <DropdownMenuContent align="end" className="w-64 rounded-xl shadow-xl border-2 p-2">
+                <DropdownMenuLabel className="px-3 py-2">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-semibold text-[#0A1A2F] dark:text-white">{user?.first_name || user?.username}</span>
+                    <span className="text-xs text-[#0A1A2F]/60 dark:text-gray-400">{user?.email}</span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="my-2" />
+                <DropdownMenuItem 
+                  onClick={() => navigate("/profile")} 
+                  className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-3 hover:bg-[#0077FF]/10 transition-colors"
+                >
+                  <User className="w-4 h-4 text-[#0077FF]" />
+                  <span className="font-medium">{t("profile")}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/my-shop")}>
-                  ⚙️ {t("settings")}
+                <DropdownMenuItem 
+                  onClick={() => navigate("/my-shop")} 
+                  className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-3 hover:bg-[#0077FF]/10 transition-colors"
+                >
+                  <Settings className="w-4 h-4 text-[#0077FF]" />
+                  <span className="font-medium">Paramètres boutique</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
-                    toast.info("Redirection vers la page principale");
-                    navigate("/");
-                  }}
+                  onClick={() => navigate("/")}
+                  className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-3 hover:bg-[#0077FF]/10 transition-colors"
                 >
-                  🏠 Page principale
+                  <Home className="w-4 h-4 text-[#0077FF]" />
+                  <span className="font-medium">Page principale</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
-                  🚪 {t("logout")}
+                <DropdownMenuSeparator className="my-2" />
+                <DropdownMenuItem 
+                  onClick={handleLogout} 
+                  className="cursor-pointer rounded-lg px-3 py-2.5 flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="font-medium">{t("logout")}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

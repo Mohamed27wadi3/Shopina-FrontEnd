@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { DashboardHeader } from "../components/DashboardHeader";
 import { DashboardSidebar } from "../components/DashboardSidebar";
+import { Footer } from "../components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { useAuth } from "../context/AuthContext";
 import { dashboardAPI } from "../services/api";
@@ -178,65 +179,76 @@ export function DashboardPage() {
       <div className="flex">
         <DashboardSidebar />
 
-        <main className="flex-1 p-8 dark:bg-gray-950">
-          <div className="mb-8">
-            {/* Mapper les plans français aux noms anglais */}
-            {(() => {
-              const planMap: Record<string, string> = {
-                'free': 'FREE',
-                'starter': 'STARTER',
-                'pro': 'GOLD',
-                'enterprise': 'ENTERPRISE'
-              };
-              const userPlan = user?.plan || 'free';
-              const planLabel = planMap[userPlan] || userPlan.toUpperCase();
-              
-              return (
-                <>
-                  <h1 className="text-[#0A1A2F] dark:text-white mb-2" style={{ fontSize: "36px", fontWeight: "800" }}>
-                    Bienvenue, {user?.first_name || user?.username} <span className="text-sm bg-gradient-to-r from-[#0077FF] to-[#5AC8FA] text-white px-3 py-1 rounded-full" style={{ fontWeight: '600' }}>({planLabel})</span>
-                  </h1>
-                  <p className="text-[#0A1A2F]/60 dark:text-gray-400">Voici un aperçu de votre boutique aujourd'hui</p>
-                </>
-              );
-            })()}
+        <main className="flex-1 p-6 lg:p-8 dark:bg-gray-950">
+          {/* Welcome Card */}
+          <div className="mb-8 bg-gradient-to-br from-[#0077FF] via-[#0077FF] to-[#5AC8FA] rounded-2xl p-8 shadow-xl text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+            <div className="relative z-10">
+              {(() => {
+                const planMap: Record<string, string> = {
+                  'free': 'FREE',
+                  'starter': 'STARTER',
+                  'pro': 'GOLD',
+                  'enterprise': 'ENTERPRISE'
+                };
+                const userPlan = user?.plan || 'free';
+                const planLabel = planMap[userPlan] || userPlan.toUpperCase();
+                
+                return (
+                  <>
+                    <div className="flex items-center gap-3 mb-3">
+                      <h1 className="text-3xl lg:text-4xl font-extrabold">
+                        👋 Bienvenue, {user?.first_name || user?.username}!
+                      </h1>
+                      <span className="text-xs bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full font-bold border border-white/30">
+                        {planLabel}
+                      </span>
+                    </div>
+                    <p className="text-white/90 text-lg">Voici un aperçu complet de votre boutique aujourd'hui</p>
+                  </>
+                );
+              })()}
+            </div>
           </div>
 
           {/* Errors are handled silently for a professional UX */}
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
             {statCards.map((stat, index) => {
               const Icon = stat.icon;
               const changePositive = stat.change >= 0;
               return (
                 <Card
                   key={stat.key}
-                  className="dash-card border-2 border-gray-100 hover:border-[#0077FF]/30 hover:shadow-lg transition-all rounded-2xl"
+                  className="dash-card border-2 border-gray-100 dark:border-gray-800 hover:border-[#0077FF]/30 hover:shadow-2xl transition-all duration-300 rounded-2xl bg-white dark:bg-gray-900"
                   style={{ animationDelay: `${index * 60}ms` }}
                 >
                   <CardContent className="p-6 dash-animate">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0077FF]/10 to-[#5AC8FA]/10 flex items-center justify-center">
-                        <Icon className="w-6 h-6 text-[#0077FF]" />
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#0077FF]/20 to-[#5AC8FA]/20 flex items-center justify-center shadow-lg">
+                        <Icon className="w-7 h-7 text-[#0077FF] dark:text-[#5AC8FA]" />
                       </div>
-                      <div className={`dash-pill ${changePositive ? "dash-pill-up" : "dash-pill-down"}`}>
-                        {changePositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                        <span className="font-semibold">{(stat.change ?? 0).toFixed(1)}%</span>
-                      </div>
+                      {stat.change !== 0 && (
+                        <div className={`dash-pill ${changePositive ? "dash-pill-up" : "dash-pill-down"}`}>
+                          {changePositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                          <span className="font-semibold">{(stat.change ?? 0).toFixed(1)}%</span>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-[#0A1A2F]/60 text-sm mb-1">{stat.title}</p>
-                    <p className="text-[#0A1A2F] dark:text-white text-2xl font-extrabold">{stat.value}</p>
-                    <p className="text-xs text-[#0A1A2F]/60 dark:text-gray-400 mt-2">{stat.hint}</p>
+                    <p className="text-[#0A1A2F]/60 dark:text-gray-400 text-sm mb-2 font-medium">{stat.title}</p>
+                    <p className="text-[#0A1A2F] dark:text-white text-3xl font-extrabold mb-2">{stat.value}</p>
+                    <p className="text-xs text-[#0A1A2F]/50 dark:text-gray-500 mt-2">{stat.hint}</p>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6 mb-8">
-            <Card className="dash-card border-2 border-gray-100 rounded-2xl">
+          <div className="grid lg:grid-cols-2 gap-4 lg:gap-6 mb-8">
+            <Card className="dash-card border-2 border-gray-100 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-[#0A1A2F] flex items-center gap-2">
+                <CardTitle className="text-[#0A1A2F] dark:text-white flex items-center gap-2">
                   <BarChart2 className="w-5 h-5 text-[#0077FF]" />
                   Chiffre d'affaires (7 jours)
                 </CardTitle>
@@ -254,9 +266,9 @@ export function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="dash-card border-2 border-gray-100 rounded-2xl">
+            <Card className="dash-card border-2 border-gray-100 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-[#0A1A2F] flex items-center gap-2">
+                <CardTitle className="text-[#0A1A2F] dark:text-white flex items-center gap-2">
                   <ShoppingCart className="w-5 h-5 text-[#0077FF]" />
                   Commandes (7 jours)
                 </CardTitle>
@@ -275,10 +287,10 @@ export function DashboardPage() {
             </Card>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6 mb-8">
-            <Card className="dash-card border-2 border-gray-100 rounded-2xl">
+          <div className="grid lg:grid-cols-2 gap-4 lg:gap-6 mb-8">
+            <Card className="dash-card border-2 border-gray-100 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 shadow-lg">
               <CardHeader>
-                <CardTitle className="text-[#0A1A2F]">Commandes récentes</CardTitle>
+                <CardTitle className="text-[#0A1A2F] dark:text-white text-lg font-bold">Commandes récentes</CardTitle>
               </CardHeader>
               <CardContent className="dash-animate">
                 <div className="space-y-4">
@@ -303,9 +315,9 @@ export function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="dash-card border-2 border-gray-100 rounded-2xl">
+            <Card className="dash-card border-2 border-gray-100 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 shadow-lg">
               <CardHeader>
-                <CardTitle className="text-[#0A1A2F]">Produits les plus vendus</CardTitle>
+                <CardTitle className="text-[#0A1A2F] dark:text-white text-lg font-bold">Produits les plus vendus</CardTitle>
               </CardHeader>
               <CardContent className="dash-animate">
                 <div className="space-y-4">
@@ -331,12 +343,12 @@ export function DashboardPage() {
             </Card>
           </div>
 
-          <Card className="dash-card border-2 border-gray-100 rounded-2xl">
+          <Card className="dash-card border-2 border-gray-100 dark:border-gray-800 rounded-2xl bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-[#0A1A2F]">Actions rapides</CardTitle>
+              <CardTitle className="text-[#0A1A2F] dark:text-white text-lg font-bold">Actions rapides</CardTitle>
             </CardHeader>
             <CardContent className="dash-animate">
-              <div className="grid md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
                 {[
                   { label: "Ajouter un produit", icon: Package },
                   { label: "Voir les commandes", icon: ShoppingCart },
@@ -347,10 +359,10 @@ export function DashboardPage() {
                   return (
                     <button
                       key={index}
-                      className="p-6 border-2 border-gray-200 hover:border-[#0077FF] rounded-xl hover:shadow-lg transition-all group dash-action"
+                      className="p-5 lg:p-6 border-2 border-gray-200 dark:border-gray-700 hover:border-[#0077FF] dark:hover:border-[#5AC8FA] rounded-xl hover:shadow-xl transition-all duration-300 group dash-action bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900"
                     >
-                      <Icon className="w-8 h-8 text-[#0077FF] mb-3 group-hover:scale-110 transition-transform" />
-                      <p className="text-[#0A1A2F] dark:text-white font-semibold">{action.label}</p>
+                      <Icon className="w-8 h-8 text-[#0077FF] dark:text-[#5AC8FA] mb-3 group-hover:scale-125 transition-transform duration-300" />
+                      <p className="text-[#0A1A2F] dark:text-white font-semibold text-sm">{action.label}</p>
                     </button>
                   );
                 })}
@@ -359,6 +371,7 @@ export function DashboardPage() {
           </Card>
         </main>
       </div>
+      <Footer />
     </div>
   );
 }

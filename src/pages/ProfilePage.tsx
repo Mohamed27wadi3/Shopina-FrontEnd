@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import { useState, useRef, useEffect } from "react";
 import { DashboardHeader } from "../components/DashboardHeader";
 import { DashboardSidebar } from "../components/DashboardSidebar";
+import { Footer } from "../components/Footer";
 import { User, Mail, Phone, MapPin, Building, Save, Camera, Loader, Globe } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -914,6 +915,7 @@ export function ProfilePage() {
           </div>
         </main>
       </div>
+      <Footer />
     </div>
   );
 }

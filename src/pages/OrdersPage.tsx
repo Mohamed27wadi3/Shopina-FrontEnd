@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { DashboardHeader } from "../components/DashboardHeader";
 import { DashboardSidebar } from "../components/DashboardSidebar";
+import { Footer } from "../components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { ordersAPI } from "../services/api";
 import { Loader2, Package, Search, Filter } from "lucide-react";
@@ -200,6 +201,7 @@ export function OrdersPage() {
           </Card>
         </main>
       </div>
+      <Footer />
     </div>
   );
 }
