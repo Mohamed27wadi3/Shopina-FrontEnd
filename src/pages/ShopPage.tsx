@@ -298,7 +298,7 @@ export function ShopPage() {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <span className="text-[#0A1A2F] dark:text-white block" style={{ fontSize: '28px', fontWeight: '800', letterSpacing: '-0.02em' }}>
-                          ${(product.price || 0).toFixed(2)}
+                          ${(Number(product.price) || 0).toFixed(2)}
                         </span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                           {product.stock > 0 ? `${product.stock} en stock` : 'Épuisé'}
