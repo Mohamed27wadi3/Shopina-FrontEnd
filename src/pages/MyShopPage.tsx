@@ -119,6 +119,54 @@ export function MyShopPage() {
     }
   }
 
+  // Add product to current shop (merchant)
+  const [pName, setPName] = useState("");
+  const [pPrice, setPPrice] = useState("");
+  const [pCategory, setPCategory] = useState("");
+  const [pImage, setPImage] = useState<File | null>(null);
+  const [adding, setAdding] = useState(false);
+
+  async function handleAddProduct(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pName || !pPrice) {
+      toast.error('Nom et prix requis');
+      return;
+    }
+    setAdding(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      const fd = new FormData();
+      fd.append('name', pName);
+      fd.append('price', pPrice);
+      if (pCategory) fd.append('category', pCategory);
+      if (pImage) fd.append('image', pImage as Blob);
+
+      const res = await fetch(`${API_BASE}/api/shop/api/create/`, {
+        method: 'POST',
+        body: fd,
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        toast.success('Produit ajouté');
+        // Update shop counters locally if available
+        setShop((s:any) => s ? { ...s, total_products: (s.total_products || 0) + 1 } : s);
+        // reset fields
+        setPName(''); setPPrice(''); setPCategory(''); setPImage(null);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.detail || 'Erreur lors de l\u2019ajout');
+      }
+    } catch (e:any) {
+      toast.error(e?.message || 'Erreur réseau');
+    } finally {
+      setAdding(false);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       <DashboardHeader />
@@ -187,6 +235,32 @@ export function MyShopPage() {
                     <Link to="/orders" className="text-center rounded-xl border-2 border-gray-200 px-5 py-2">Commandes</Link>
                     <Link to="/dashboard" className="text-center rounded-xl border-2 border-gray-200 px-5 py-2">Produits</Link>
                   </div>
+                </CardContent>
+              </Card>
+              {/* Add Product small form (silent UI, same styles) */}
+              <Card className="border-2 border-gray-100 dark:border-gray-800 rounded-2xl">
+                <CardHeader>
+                  <CardTitle className="text-[#0A1A2F] dark:text-white">Ajouter un produit</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleAddProduct} className="space-y-4 max-w-xl">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <Input placeholder="Nom du produit" value={pName} onChange={e => setPName(e.target.value)} className="h-11 rounded-xl" />
+                      <Input placeholder="Prix" value={pPrice} onChange={e => setPPrice(e.target.value)} className="h-11 rounded-xl" />
+                      <Input placeholder="Catégorie (optionnel)" value={pCategory} onChange={e => setPCategory(e.target.value)} className="h-11 rounded-xl" />
+                    </div>
+                    <div>
+                      <input type="file" accept="image/*" onChange={e => setPImage(e.target.files ? e.target.files[0] : null)} />
+                    </div>
+                    <div className="flex gap-3">
+                      <Button type="submit" disabled={adding} className="bg-[#0077FF] hover:bg-[#0077FF]/90 text-white rounded-xl px-5">
+                        {adding ? 'Ajout…' : 'Ajouter le produit'}
+                      </Button>
+                      <Button onClick={() => { setPName(''); setPPrice(''); setPCategory(''); setPImage(null); }} className="rounded-xl border-2 border-gray-200 px-5">
+                        Annuler
+                      </Button>
+                    </div>
+                  </form>
                 </CardContent>
               </Card>
             </div>

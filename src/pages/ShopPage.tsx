@@ -30,23 +30,33 @@ export function ShopPage() {
     if (stored) setCart(JSON.parse(stored));
   }, []);
 
-  // Fetch products and categories
+  // Fetch products and categories. If `slug` present, fetch public shop products instead of global list.
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [prodRes, catRes] = await Promise.all([
-          fetch(`${API_BASE}/api/shop/products/`),
-          fetch(`${API_BASE}/api/shop/categories/`),
-        ]);
-        
-        if (prodRes.ok) {
-          const data = await prodRes.json();
-          setProducts(data);
-        }
+        // Categories still fetched globally
+        const catRes = await fetch(`${API_BASE}/api/shop/categories/`);
         if (catRes.ok) {
           const data = await catRes.json();
           setCategories([DEFAULT_CATEGORY, ...data.map((c: any) => c.name)]);
+        }
+
+        if (slug) {
+          // Fetch public shop products for the slug
+          const prodRes = await fetch(`${API_BASE}/shop/api/public/${slug}/products/`);
+          if (prodRes.ok) {
+            const data = await prodRes.json();
+            setProducts(data);
+          } else {
+            setProducts([]);
+          }
+        } else {
+          const prodRes = await fetch(`${API_BASE}/api/shop/products/`);
+          if (prodRes.ok) {
+            const data = await prodRes.json();
+            setProducts(data);
+          }
         }
       } catch (e) {
         console.error('Failed to fetch products or categories', e);
@@ -56,7 +66,7 @@ export function ShopPage() {
       }
     };
     fetchData();
-  }, []);
+  }, [slug]);
 
   // If a shop slug is present, load public shop info (no visual overhaul)
   useEffect(() => {
