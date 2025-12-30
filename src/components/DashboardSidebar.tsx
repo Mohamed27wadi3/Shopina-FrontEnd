@@ -21,7 +21,6 @@ const menuItems = [
   { icon: Package, label: "Produits", path: "/dashboard" },
   { icon: Users, label: "Clients", path: "/clients" },
   { icon: BarChart3, label: "Statistiques", path: "/dashboard" },
-  { icon: Store, label: "Ma boutique", externalHref: `${API_ORIGIN}/my-shop/` },
   { icon: CreditCard, label: "Paiements", path: "/pricing" },
   { icon: Settings, label: "Paramètres", path: "/profile" },
   { icon: HelpCircle, label: "Aide", path: "/support" },

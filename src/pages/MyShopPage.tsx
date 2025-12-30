@@ -9,6 +9,7 @@ import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
+import { LogOut } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
@@ -31,6 +32,8 @@ export function MyShopPage() {
       setError(null);
       try {
         const token = localStorage.getItem('access_token');
+          console.log('🔍 MyShopPage - Current user from context:', user);
+          console.log('🔍 MyShopPage - Token exists:', !!token);
         const res = await fetch(`${API_BASE}/shop/api/my-shop/`, {
           headers: {
             "Content-Type": "application/json",
@@ -41,8 +44,22 @@ export function MyShopPage() {
         if (!ignore) {
           if (res.status === 200) {
             const data = await res.json();
+              console.log('✅ Shop data loaded:', data);
+              console.log('🔍 Shop owner check - Expected user:', user?.email, 'Shop:', data.name);
+            
+              // Security check: verify the shop owner matches current user
+              if (data.owner && user && data.owner.email !== user.email) {
+                console.error('🚨 SECURITY ALERT: Shop owner mismatch!');
+                console.error('🚨 Current user:', user.email);
+                console.error('🚨 Shop owner:', data.owner.email);
+                setError(`Erreur de session: cette boutique appartient à ${data.owner.email}, mais vous êtes connecté en tant que ${user.email}. Veuillez vous déconnecter et reconnecter.`);
+                setShop(null);
+                return;
+              }
+            
             setShop(data);
           } else if (res.status === 404) {
+              console.log('ℹ️ No shop found for current user');
             setShop(null);
           } else if (res.status === 401) {
             setError("Veuillez vous connecter pour gérer votre boutique.");
@@ -115,11 +132,25 @@ export function MyShopPage() {
           {!loading && error && (
             <Card className="border-2 border-gray-100 dark:border-gray-800 rounded-2xl">
               <CardHeader>
-                <CardTitle>Accès requis</CardTitle>
+                  <CardTitle className="text-red-600 dark:text-red-400">⚠️ Problème de session</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-[#0A1A2F]/70 mb-4">{error}</p>
-                <Link to="/login" className="inline-block bg-[#0077FF] hover:bg-[#0077FF]/90 text-white rounded-xl px-5 py-2">Se connecter</Link>
+                  <p className="text-[#0A1A2F]/70 dark:text-white/70 mb-6 whitespace-pre-line">{error}</p>
+                  <div className="flex gap-3">
+                    <Button 
+                      onClick={() => {
+                        localStorage.clear();
+                        window.location.href = '/login';
+                      }}
+                      className="bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Se déconnecter et reconnecter
+                    </Button>
+                    <Link to="/dashboard" className="inline-flex items-center px-4 py-2 rounded-xl border-2 border-gray-200 hover:bg-gray-50">
+                      Retour au dashboard
+                    </Link>
+                  </div>
               </CardContent>
             </Card>
           )}
