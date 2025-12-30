@@ -55,6 +55,7 @@ function AppRoutes() {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/templates" element={<TemplatesPage />} />
       <Route path="/shop" element={<ShopPage />} />
+      <Route path="/shop/:slug" element={<ShopPage />} />
       <Route path="/product/:id" element={<ProductDetailsPage />} />
       <Route path="/support" element={<SupportPage />} />
 

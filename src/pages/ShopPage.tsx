@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Button } from "../components/ui/button";
@@ -15,12 +15,14 @@ const DEFAULT_CATEGORY = 'Tous les produits';
 
 export function ShopPage() {
   const navigate = useNavigate();
+  const { slug } = useParams();
   const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORY);
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<number[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<string[]>([DEFAULT_CATEGORY]);
   const [loading, setLoading] = useState(true);
+  const [publicShop, setPublicShop] = useState<any | null>(null);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -55,6 +57,24 @@ export function ShopPage() {
     };
     fetchData();
   }, []);
+
+  // If a shop slug is present, load public shop info (no visual overhaul)
+  useEffect(() => {
+    if (!slug) return;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/shop/api/public/${slug}/`);
+        if (res.ok) {
+          const data = await res.json();
+          setPublicShop(data);
+        } else {
+          setPublicShop(null);
+        }
+      } catch {
+        setPublicShop(null);
+      }
+    })();
+  }, [slug]);
 
   const filteredProducts = products.filter((product: any) => {
     const matchesCategory = selectedCategory === DEFAULT_CATEGORY || product.category?.name === selectedCategory;
@@ -100,10 +120,10 @@ export function ShopPage() {
                 <span className="text-sm font-medium">Boutique en ligne</span>
               </div>
               <h1 className="text-white mb-6 animate-in slide-in-from-bottom-4 duration-700" style={{ fontSize: '56px', fontWeight: '800', lineHeight: '1.1', letterSpacing: '-0.02em' }}>
-                Découvrez nos produits
+                {publicShop?.name || 'Découvrez nos produits'}
               </h1>
               <p className="text-white/90 text-xl mb-8 max-w-2xl leading-relaxed animate-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '100ms' }}>
-                Une sélection soigneusement choisie de produits premium pour répondre à tous vos besoins
+                {publicShop?.description || "Une sélection soigneusement choisie de produits premium pour répondre à tous vos besoins"}
               </p>
               <div className="flex items-center gap-4 animate-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '200ms' }}>
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl">
