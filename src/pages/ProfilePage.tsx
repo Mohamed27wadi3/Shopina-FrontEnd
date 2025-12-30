@@ -727,14 +727,36 @@ export function ProfilePage() {
                 <CardHeader>
                   <div className="flex items-center justify-between gap-3">
                     <CardTitle className="text-[#0A1A2F] dark:text-white">Paramètres de la boutique</CardTitle>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="rounded-xl border-2 border-gray-200 hover:text-[#0077FF] hover:border-[#0077FF]"
-                      onClick={() => { window.location.href = '/my-shop'; }}
-                    >
-                      Gérer ma boutique
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-xl border-2 border-gray-200 hover:text-[#0077FF] hover:border-[#0077FF]"
+                        onClick={() => { window.location.href = '/my-shop'; }}
+                      >
+                        Gérer ma boutique
+                      </Button>
+                      <Button
+                        type="button"
+                        className="bg-[#07C160] hover:bg-[#07C160]/90 text-white rounded-xl"
+                        onClick={() => {
+                          const slug = (formData.shopUrl || '').trim();
+                          if (!slug) {
+                            // fallback to user's shop slug if available
+                            const userSlug = (user && (user.shop_slug || user.shopUrl)) || '';
+                            if (userSlug) {
+                              window.location.href = `/shop/${userSlug}`;
+                            } else {
+                              window.location.href = '/my-shop';
+                            }
+                          } else {
+                            window.location.href = `/shop/${slug}`;
+                          }
+                        }}
+                      >
+                        Voir ma boutique
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
