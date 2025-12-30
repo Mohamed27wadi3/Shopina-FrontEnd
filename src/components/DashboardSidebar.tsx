@@ -17,13 +17,13 @@ const API_ORIGIN = (() => { try { return new URL(API_BASE).origin; } catch { ret
 const menuItems = [
   { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard" },
   // Route Commandes to React orders page (same interface)
-  { icon: ShoppingCart, label: "Commandes", path: "/orders" },
-  { icon: Package, label: "Produits", path: "/dashboard" },
-  { icon: Users, label: "Clients", path: "/clients" },
-  { icon: BarChart3, label: "Statistiques", path: "/dashboard" },
-  { icon: CreditCard, label: "Paiements", path: "/pricing" },
-  { icon: Settings, label: "Paramètres", path: "/profile" },
-  { icon: HelpCircle, label: "Aide", path: "/support" },
+    { icon: ShoppingCart, label: "Commandes", path: "/orders" },
+    { icon: Package, label: "Produits", path: "/dashboard" },
+    { icon: Users, label: "Clients", path: "/clients" },
+    { icon: BarChart3, label: "Statistiques", path: "/dashboard" },
+    { icon: CreditCard, label: "Paiements", path: "/pricing" },
+    { icon: Settings, label: "Paramètres", path: "/profile" },
+    { icon: HelpCircle, label: "Aide", path: "/support" },
 ];
 
 export function DashboardSidebar() {
