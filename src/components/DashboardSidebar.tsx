@@ -16,8 +16,7 @@ const API_ORIGIN = (() => { try { return new URL(API_BASE).origin; } catch { ret
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard" },
-  // Route Commandes to React orders page (same interface)
-    { icon: ShoppingCart, label: "Commandes", path: "/orders" },
+  // Commandes will render with submenu
     { icon: Package, label: "Produits", path: "/dashboard" },
     { icon: Users, label: "Clients", path: "/clients" },
     { icon: BarChart3, label: "Statistiques", path: "/dashboard" },
@@ -29,6 +28,7 @@ const menuItems = [
 export function DashboardSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [openOrders, setOpenOrders] = useState(false);
 
   return (
     <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 min-h-screen p-6 hidden lg:block">
@@ -69,6 +69,28 @@ export function DashboardSidebar() {
             </Link>
           );
         })}
+        {/* Commandes submenu */}
+        <div>
+          <button
+            onClick={() => setOpenOrders((s) => !s)}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left transition-all ${
+              location.pathname.startsWith('/orders')
+                ? "bg-gradient-to-r from-[#0077FF] to-[#5AC8FA] text-white shadow-lg shadow-[#0077FF]/20"
+                : "text-[#0A1A2F]/70 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#0077FF] dark:hover:text-[#5AC8FA]"
+            }`}
+          >
+            <ShoppingCart className="w-5 h-5" />
+            <span style={{ fontWeight: location.pathname.startsWith('/orders') ? '600' : '500' }}>Commandes</span>
+          </button>
+
+          {openOrders && (
+            <div className="mt-2 space-y-2 pl-8">
+              <Link to="/orders" className="block px-3 py-2 rounded-md hover:bg-gray-50">Toutes les commandes</Link>
+              <Link to="/orders/create" className="block px-3 py-2 rounded-md hover:bg-gray-50">Ajouter commande</Link>
+              <Link to="/orders/import" className="block px-3 py-2 rounded-md hover:bg-gray-50">Importer commandes</Link>
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* Upgrade Card */}

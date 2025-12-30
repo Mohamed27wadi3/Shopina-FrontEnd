@@ -349,11 +349,11 @@ export const ordersAPI = {
   /**
    * Create order from cart
    */
-  create: async () => {
+  create: async (data?: any) => {
     const response = await fetch(`${API_BASE}/api/orders/`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({}),
+      body: JSON.stringify(data || {}),
       credentials: 'include',
     });
     return handleResponse<any>(response);

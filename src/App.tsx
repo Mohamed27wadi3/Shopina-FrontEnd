@@ -9,6 +9,7 @@ import { PricingPage } from "./pages/PricingPage";
 import { TemplatesPage } from "./pages/TemplatesPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { OrdersPage } from "./pages/OrdersPage";
+import AddOrderPage from "./pages/AddOrderPage";
 import { ClientsPage } from "./pages/ClientsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { ShopPage } from "./pages/ShopPage";
@@ -16,6 +17,7 @@ import { ProductDetailsPage } from "./pages/ProductDetailsPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import { OrderConfirmationPage } from "./pages/OrderConfirmationPage";
 import { SupportPage } from "./pages/SupportPage";
+import LogoutPage from "./pages/LogoutPage";
 import { MyShopPage } from "./pages/MyShopPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeLanguageProvider } from "./context/ThemeLanguageContext";
@@ -58,6 +60,7 @@ function AppRoutes() {
       <Route path="/shop/:slug" element={<ShopPage />} />
       <Route path="/product/:id" element={<ProductDetailsPage />} />
       <Route path="/support" element={<SupportPage />} />
+      <Route path="/logout" element={<LogoutPage />} />
 
       {/* Protected routes - require authentication */}
       <Route
@@ -73,6 +76,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute fallback={<AuthLoading />}>
             <OrdersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders/create"
+        element={
+          <ProtectedRoute fallback={<AuthLoading />}>
+            <AddOrderPage />
           </ProtectedRoute>
         }
       />
