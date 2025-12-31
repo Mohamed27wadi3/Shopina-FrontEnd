@@ -3,13 +3,13 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Button } from "../components/ui/button";
+import ProductDetailModal from "../components/ProductDetailModal";
+import { API_BASE } from "../utils/apiBase";
 import { Input } from "../components/ui/input";
 import { ShoppingCart, Search, Star, Filter, Package, Loader } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { toast } from "sonner";
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 const DEFAULT_CATEGORY = 'Tous les produits';
 
@@ -19,6 +19,8 @@ export function ShopPage() {
   const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORY);
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<number[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [showProductModal, setShowProductModal] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<string[]>([DEFAULT_CATEGORY]);
   const [loading, setLoading] = useState(true);
@@ -86,28 +88,75 @@ export function ShopPage() {
     })();
   }, [slug]);
 
+  // Load announcements from backend or localStorage
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  useEffect(() => {
+    if (!slug) return;
+    let ignore = false;
+    (async () => {
+      try {
+        // try backend
+        const res = await fetch(`${API_BASE}/api/shop/public/${slug}/announcements/`);
+        if (res.ok) {
+          const data = await res.json();
+          if (!ignore) setAnnouncements(data || []);
+          return;
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // fallback to localStorage
+      const key = `shop_announcements_${slug}`;
+      const stored = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!ignore) setAnnouncements(stored || []);
+    })();
+    return () => { ignore = true; };
+  }, [slug]);
+
   const filteredProducts = products.filter((product: any) => {
     const matchesCategory = selectedCategory === DEFAULT_CATEGORY || product.category?.name === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
+  // Open product detail modal instead of directly adding to cart
   const addToCart = (product: any) => {
-    const newCart = [...cart, product.id];
-    setCart(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
-    toast.success(`🛒 ${product.name} ajouté au panier !`, {
-      duration: 3000,
-      style: {
-        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-        color: 'white',
-        fontSize: '16px',
-        fontWeight: '600',
-        padding: '16px 24px',
-        borderRadius: '16px',
-        boxShadow: '0 20px 50px rgba(16, 185, 129, 0.4)'
+    setSelectedProduct(product);
+    setShowProductModal(true);
+  };
+
+  const confirmAddToCart = async ({ product, quantity }: { product: any; quantity: number }) => {
+    try {
+      // If user is authenticated, call backend cart API; otherwise use localStorage
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        const res = await fetch(`${API_BASE}/api/carts/items/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ product_id: product.id, quantity }),
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          const txt = await res.text().catch(() => '');
+          throw new Error(txt || 'Erreur ajout panier');
+        }
+        toast.success(`🛒 ${product.name} ajouté au panier !`);
+      } else {
+        // Guest: store structured cart in localStorage
+        const stored = JSON.parse(localStorage.getItem('guest_cart') || '[]');
+        stored.push({ product_id: product.id, quantity, price: product.price });
+        localStorage.setItem('guest_cart', JSON.stringify(stored));
+        toast.success(`🛒 ${product.name} ajouté au panier (invité)`);
       }
-    });
+    } catch (e: any) {
+      console.error('Add to cart error', e);
+      toast.error(e?.message || 'Erreur lors de l\'ajout au panier');
+    } finally {
+      setShowProductModal(false);
+      setSelectedProduct(null);
+    }
   };
 
   return (
@@ -133,8 +182,22 @@ export function ShopPage() {
                 {publicShop?.name || 'Découvrez nos produits'}
               </h1>
               <p className="text-white/90 text-xl mb-8 max-w-2xl leading-relaxed animate-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '100ms' }}>
-                {publicShop?.description || "Une sélection soigneusement choisie de produits premium pour répondre à tous vos besoins"}
+                    {publicShop?.description || "Une sélection soigneusement choisie de produits premium pour répondre à tous vos besoins"}
               </p>
+                  {/* Announcements banner (if any) */}
+                  {announcements && announcements.length > 0 && (
+                    <div className="mt-6 space-y-3">
+                      {announcements.slice(0,3).map((a:any) => (
+                        <div key={a.id || a.title} className="bg-white/90 text-[#0A1A2F] rounded-xl p-3 shadow-md flex items-center gap-4">
+                          {a.image && <img src={a.image} alt={a.title} className="w-20 h-20 object-cover rounded-md" />}
+                          <div>
+                            <div className="font-semibold">{a.title}</div>
+                            <div className="text-sm text-gray-700">{a.message}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
               <div className="flex items-center gap-4 animate-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '200ms' }}>
                 <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl">
                   <span className="text-3xl font-bold">{products.length}</span>
@@ -336,6 +399,13 @@ export function ShopPage() {
       </main>
 
       <Footer />
+
+      <ProductDetailModal
+        product={selectedProduct}
+        open={showProductModal}
+        onClose={() => { setShowProductModal(false); setSelectedProduct(null); }}
+        onConfirm={confirmAddToCart}
+      />
     </div>
   );
 }

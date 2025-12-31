@@ -1,8 +1,7 @@
 import { ShoppingBag, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+import { API_BASE } from "../utils/apiBase";
 
 const footerLinks = {
   produit: [

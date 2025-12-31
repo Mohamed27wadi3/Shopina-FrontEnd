@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
+import { API_BASE } from "../utils/apiBase";
 
 interface User {
   id: string;
@@ -31,7 +32,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 export function getAuthHeaders() {
   const token = localStorage.getItem('access_token');

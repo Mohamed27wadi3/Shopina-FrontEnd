@@ -11,8 +11,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Trash2, Plus, Minus, Loader } from 'lucide-react';
 import { toast } from 'sonner';
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+import { API_BASE } from '../utils/apiBase';
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
 
 function CheckoutForm({ orderId, clientSecret }: { orderId: number | null; clientSecret: string | null }) {
@@ -34,7 +33,6 @@ function CheckoutForm({ orderId, clientSecret }: { orderId: number | null; clien
     const res = await stripe.confirmCardPayment(clientSecret, {
       payment_method: { card },
     });
-
     if (res.error) {
       setMessage(res.error.message || 'Le paiement a échoué');
     } else if (res.paymentIntent && res.paymentIntent.status === 'succeeded') {

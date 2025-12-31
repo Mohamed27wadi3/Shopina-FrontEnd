@@ -1,14 +1,10 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button } from '../components/ui/button';
 import { Card, CardContent } from "../components/ui/card";
 import { Star, ShoppingCart, Heart, Share2, Minus, Plus } from "lucide-react";
-import { toast } from "sonner";
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+import { toast } from 'sonner';
+import { API_BASE } from '../utils/apiBase';
 
 export function ProductDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -175,11 +171,11 @@ export function ProductDetailsPage() {
               <p className="text-[#0A1A2F]/60 text-sm mb-2">Prix</p>
               <div className="flex items-baseline gap-3">
                 <span className="text-[#0A1A2F]" style={{ fontSize: '32px', fontWeight: '800' }}>
-                  ${product.price?.toFixed(2)}
+                  ${(Number(product.price) || 0).toFixed(2)}
                 </span>
                 {product.original_price && (
                   <span className="text-[#0A1A2F]/40 line-through">
-                    ${product.original_price?.toFixed(2)}
+                    ${(Number(product.original_price) || 0).toFixed(2)}
                   </span>
                 )}
               </div>

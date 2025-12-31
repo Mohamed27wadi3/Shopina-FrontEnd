@@ -1,13 +1,10 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { CheckCircle2, Package, Truck, Clock } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Button } from '../components/ui/button';
+import { Loader, CheckCircle, Package, Truck, Star } from 'lucide-react';
+import { toast } from 'sonner';
+import { API_BASE } from '../utils/apiBase';
 import { Badge } from "../components/ui/badge";
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
 
 export function OrderConfirmationPage() {
   const { id } = useParams<{ id: string }>();

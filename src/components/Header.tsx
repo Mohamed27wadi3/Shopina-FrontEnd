@@ -14,7 +14,7 @@ import {
 } from "./ui/dropdown-menu";
 import { NotificationBell } from "./NotificationBell";
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+import { API_BASE } from '../utils/apiBase';
 const API_ORIGIN = (() => {
   try { return new URL(API_BASE).origin; } catch { return 'http://localhost:8000'; }
 })();

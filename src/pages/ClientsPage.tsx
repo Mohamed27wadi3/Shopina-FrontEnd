@@ -9,7 +9,7 @@ import { Button } from "../components/ui/button";
 import { Search, Mail, Phone, MapPin, Calendar, User } from "lucide-react";
 import { toast } from "sonner";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import { API_BASE } from "../utils/apiBase";
 
 interface Customer {
   id: number;
@@ -39,7 +39,7 @@ export function ClientsPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch(`${API_BASE}/users/api/customers/`, {
+      const res = await fetch(`${API_BASE}/api/users/customers/`, {
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

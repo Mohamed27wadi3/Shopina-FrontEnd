@@ -3,7 +3,7 @@
  * Centralized API calls to Django REST backend
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+import { API_BASE } from '../utils/apiBase';
 export const API_ORIGIN = (() => {
   try {
     return new URL(API_BASE).origin;

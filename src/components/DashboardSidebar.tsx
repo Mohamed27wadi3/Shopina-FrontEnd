@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -11,13 +12,14 @@ import {
   HelpCircle,
 } from "lucide-react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+import { API_BASE } from "../utils/apiBase";
 const API_ORIGIN = (() => { try { return new URL(API_BASE).origin; } catch { return 'http://localhost:8000'; }})();
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Tableau de bord", path: "/dashboard" },
+  { icon: Store, label: "Ma boutique", path: "/my-shop" },
   // Commandes will render with submenu
-    { icon: Package, label: "Produits", path: "/dashboard" },
+    { icon: Package, label: "Produits", path: "/my-shop" },
     { icon: Users, label: "Clients", path: "/clients" },
     { icon: BarChart3, label: "Statistiques", path: "/dashboard" },
     { icon: CreditCard, label: "Paiements", path: "/pricing" },

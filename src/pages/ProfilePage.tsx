@@ -12,8 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 import { COUNTRIES, sortedCountries, getCountryByCode } from "../data/countries";
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+import { API_BASE } from "../utils/apiBase";
 
 type ProfileForm = {
   name: string;

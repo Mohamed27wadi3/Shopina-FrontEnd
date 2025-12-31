@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import { Footer } from "../components/Footer";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Header } from "../components/Header";
+// Header intentionally removed to keep the login form centered like signup
 import { useAuth } from "../context/AuthContext";
 import { toast } from "sonner";
 
@@ -83,9 +83,7 @@ export function LoginPage() {
   };
 
   return (
-    <>
-      <Header />
-      <div className="min-h-screen bg-gradient-to-br from-[#0077FF]/5 via-[#5AC8FA]/5 to-white dark:from-[#0A0A0A] dark:via-[#1A1A1A] dark:to-[#0A0A0A] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#0077FF]/5 via-[#5AC8FA]/5 to-white dark:from-[#0A0A0A] dark:via-[#1A1A1A] dark:to-[#0A0A0A] flex items-center justify-center p-6">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-gradient-to-br from-[#0077FF]/10 to-[#5AC8FA]/10 blur-3xl" />
@@ -243,8 +241,6 @@ export function LoginPage() {
           </Link>
         </div>
       </div>
-      <Footer />
     </div>
-    </>
   );
 }

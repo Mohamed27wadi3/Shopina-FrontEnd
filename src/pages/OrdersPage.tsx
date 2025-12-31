@@ -52,14 +52,16 @@ export function OrdersPage() {
 
   const filteredOrders = orders.filter((order) => {
     const searchLower = searchTerm.toLowerCase();
+    const customer = order.user || { username: "", first_name: "", last_name: "" };
     const customerName =
-      order.user.first_name || order.user.last_name
-        ? `${order.user.first_name || ""} ${order.user.last_name || ""}`.trim()
-        : order.user.username;
+      customer.first_name || customer.last_name
+        ? `${customer.first_name || ""} ${customer.last_name || ""}`.trim()
+        : customer.username || "";
+    const statusValue = (order.status || "").toLowerCase();
     return (
       customerName.toLowerCase().includes(searchLower) ||
       order.id.toString().includes(searchLower) ||
-      order.status.toLowerCase().includes(searchLower)
+      statusValue.includes(searchLower)
     );
   });
 
@@ -151,10 +153,15 @@ export function OrdersPage() {
                     </thead>
                     <tbody>
                       {filteredOrders.map((order) => {
+                        const customer = order.user || { username: "", first_name: "", last_name: "" };
                         const customerName =
-                          order.user.first_name || order.user.last_name
-                            ? `${order.user.first_name || ""} ${order.user.last_name || ""}`.trim()
-                            : order.user.username;
+                          customer.first_name || customer.last_name
+                            ? `${customer.first_name || ""} ${customer.last_name || ""}`.trim()
+                            : customer.username || "Client";
+                        const statusValue = (order.status || "pending").toLowerCase();
+                        const statusLabel = statusValue
+                          ? statusValue.charAt(0).toUpperCase() + statusValue.slice(1)
+                          : "Pending";
                         return (
                           <tr
                             key={order.id}
@@ -165,10 +172,10 @@ export function OrdersPage() {
                             <td className="px-6 py-4">
                               <span
                                 className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                                  statusColors[order.status.toLowerCase()] || statusColors.pending
+                                  statusColors[statusValue] || statusColors.pending
                                 }`}
                               >
-                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                {statusLabel}
                               </span>
                             </td>
                             <td className="px-6 py-4 text-[#0A1A2F] dark:text-white font-bold">

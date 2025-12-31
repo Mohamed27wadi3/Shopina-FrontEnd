@@ -15,8 +15,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useThemeLanguage } from "../context/ThemeLanguageContext";
 import { NotificationBell } from "./NotificationBell";
-
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+import { API_BASE } from "../utils/apiBase";
 
 export function DashboardHeader() {
   const { user, logout } = useAuth();

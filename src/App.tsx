@@ -10,6 +10,7 @@ import { TemplatesPage } from "./pages/TemplatesPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import AddOrderPage from "./pages/AddOrderPage";
+import OrdersImportPage from "./pages/OrdersImportPage";
 import { ClientsPage } from "./pages/ClientsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { ShopPage } from "./pages/ShopPage";
@@ -19,6 +20,7 @@ import { OrderConfirmationPage } from "./pages/OrderConfirmationPage";
 import { SupportPage } from "./pages/SupportPage";
 import LogoutPage from "./pages/LogoutPage";
 import { MyShopPage } from "./pages/MyShopPage";
+import ShopSettingsPage from "./pages/ShopSettingsPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeLanguageProvider } from "./context/ThemeLanguageContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -56,6 +58,7 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/templates" element={<TemplatesPage />} />
+      <Route path="/templates/:id" element={<TemplatesPage />} />
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/shop/:slug" element={<ShopPage />} />
       <Route path="/product/:id" element={<ProductDetailsPage />} />
@@ -88,6 +91,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/orders/import"
+        element={
+          <ProtectedRoute fallback={<AuthLoading />}>
+            <OrdersImportPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/clients"
         element={
           <ProtectedRoute fallback={<AuthLoading />}>
@@ -108,6 +119,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute fallback={<AuthLoading />}>
             <MyShopPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/shop/settings"
+        element={
+          <ProtectedRoute fallback={<AuthLoading />}>
+            <ShopSettingsPage />
           </ProtectedRoute>
         }
       />

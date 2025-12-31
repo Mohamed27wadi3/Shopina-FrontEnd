@@ -350,6 +350,7 @@ export function DashboardPage() {
             <CardContent className="dash-animate">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
                 {[
+                  { label: "Ma Boutique", icon: Package, action: 'my-shop' },
                   { label: "Ajouter un produit", icon: Package },
                   { label: "Voir les commandes", icon: ShoppingCart },
                   { label: "Gérer les clients", icon: Users },
@@ -359,6 +360,13 @@ export function DashboardPage() {
                   return (
                     <button
                       key={index}
+                      onClick={() => {
+                        if ((action as any).action === 'my-shop') {
+                          window.location.href = '/my-shop';
+                          return;
+                        }
+                        // default: navigate to dashboard sections
+                      }}
                       className="p-5 lg:p-6 border-2 border-gray-200 dark:border-gray-700 hover:border-[#0077FF] dark:hover:border-[#5AC8FA] rounded-xl hover:shadow-xl transition-all duration-300 group dash-action bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900"
                     >
                       <Icon className="w-8 h-8 text-[#0077FF] dark:text-[#5AC8FA] mb-3 group-hover:scale-125 transition-transform duration-300" />
