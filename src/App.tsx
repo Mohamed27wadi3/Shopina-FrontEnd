@@ -28,6 +28,7 @@ import { TemplateSelectionProvider } from "./context/TemplateSelectionContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Toaster } from "./components/ui/sonner";
 import { ScrollToHash } from "./components/ScrollToHash";
+import { SessionStatus } from "./components/SessionStatus";
 
 // Loading component for protected routes
 function AuthLoading() {
@@ -161,6 +162,7 @@ export default function App() {
           <Router>
             <ScrollToHash />
             <AppRoutes />
+            <SessionStatus />
             <Toaster />
           </Router>
         </TemplateSelectionProvider>

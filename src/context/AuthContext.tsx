@@ -17,7 +17,16 @@ interface User {
   shop_slug?: string;
   last_password_change?: string;
   two_factor_enabled?: boolean;
-} 
+  email_verified?: boolean;
+  stores?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    status: 'draft' | 'live';
+    template_id?: string;
+  }>;
+  active_store_id?: string;
+}
 
 interface AuthContextType {
   user: User | null;
@@ -38,9 +47,6 @@ export function getAuthHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-/**
- * Decode JWT token (without verification) to check expiration
- */
 function decodeJWT(token: string): any {
   try {
     const base64Url = token.split('.')[1];
@@ -54,9 +60,6 @@ function decodeJWT(token: string): any {
   }
 }
 
-/**
- * Check if JWT token is expired
- */
 function isTokenExpired(token: string): boolean {
   const decoded = decodeJWT(token);
   if (!decoded || !decoded.exp) return true;
@@ -68,9 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  /**
-   * Refresh access token using refresh token
-   */
   const refreshToken = useCallback(async (): Promise<boolean> => {
     try {
       const refreshTokenValue = localStorage.getItem('refresh_token');
@@ -90,7 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('✅ Token refreshed successfully');
         return true;
       } else {
-        // Refresh token expired or invalid - need to re-login
         console.warn('❌ Failed to refresh token - clearing auth');
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
@@ -106,9 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  /**
-   * Load user profile on mount and restore session
-   */
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -121,7 +117,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // Check if token is expired
         if (isTokenExpired(token)) {
           console.log('⏰ Token expired - attempting refresh');
           const refreshed = await refreshToken();
@@ -132,35 +127,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // Fetch user profile
-        const res = await fetch(`${API_BASE}/api/users/profile/`, { 
-          headers: { ...getAuthHeaders() },
-          credentials: 'include', // Include cookies for session
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          console.log('✅ Profile loaded:', data.username);
-          setUser(data);
-        } else if (res.status === 401) {
-          // Token invalid - try refresh
-          console.log('🔄 Unauthorized - attempting token refresh');
-          const refreshed = await refreshToken();
-          if (refreshed) {
-            // Retry profile fetch with new token
-            const retryRes = await fetch(`${API_BASE}/api/users/profile/`, { 
+        let retryCount = 0;
+        const maxRetries = 2;
+        
+        while (retryCount <= maxRetries) {
+          try {
+            const res = await fetch(`${API_BASE}/api/users/profile/`, { 
               headers: { ...getAuthHeaders() },
               credentials: 'include',
             });
-            if (retryRes.ok) {
-              const data = await retryRes.json();
-              console.log('✅ Profile loaded after refresh:', data.username);
+
+            if (res.ok) {
+              const data = await res.json();
+              console.log('✅ Profile loaded:', data.username);
+              const savedStoreId = localStorage.getItem('active_store_id');
+              if (savedStoreId) {
+                data.active_store_id = savedStoreId;
+              }
               setUser(data);
+              return;
+            } else if (res.status === 401 && retryCount === 0) {
+              console.log('🔄 Unauthorized - attempting token refresh');
+              const refreshed = await refreshToken();
+              if (!refreshed) {
+                console.log('❌ Token refresh failed');
+                setUser(null);
+                return;
+              }
+              retryCount++;
+              continue;
+            } else {
+              console.warn('❌ Failed to fetch profile:', res.status);
+              setUser(null);
+              return;
             }
+          } catch (fetchError) {
+            console.error('❌ Profile fetch error:', fetchError);
+            if (retryCount < maxRetries) {
+              retryCount++;
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              continue;
+            }
+            setUser(null);
+            return;
           }
-        } else {
-          console.warn('❌ Failed to fetch profile:', res.status);
-          setUser(null);
         }
       } catch (error) {
         console.error('❌ Profile load error:', error);
@@ -172,16 +182,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     loadProfile();
 
-    // Set up interval to refresh token before expiration (every 50 minutes)
     const tokenRefreshInterval = setInterval(async () => {
       const token = localStorage.getItem('access_token');
       if (token && isTokenExpired(token)) {
         console.log('⏰ Token about to expire - refreshing');
         await refreshToken();
       }
-    }, 50 * 60 * 1000); // 50 minutes
+    }, 50 * 60 * 1000);
 
-    return () => clearInterval(tokenRefreshInterval);
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'access_token' && !e.newValue) {
+        console.log('🔄 Token removed in another tab - logging out');
+        setUser(null);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      clearInterval(tokenRefreshInterval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [refreshToken]);
 
   const login = async (identifier: string, password: string, remember: boolean = false) => {
@@ -213,7 +233,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Fetch profile when user not returned
       const profileRes = await fetch(`${API_BASE}/api/users/profile/`, {
         headers: { Authorization: `Bearer ${data.access}` },
         credentials: 'include',
@@ -250,7 +269,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const err = await res.json();
         console.error('❌ Signup error:', err);
         
-        // Format error message for user
         let errorMsg = 'Erreur lors de la création du compte';
         if (err.error?.details?.password) {
           errorMsg = err.error.details.password.join(' ');
@@ -278,13 +296,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    console.log('🚪 Logging out - clearing tokens and user data');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('active_store_id');
     setUser(null);
   };
 
   const updateProfile = (data: Partial<User>) => {
-    if (user) setUser({ ...user, ...data });
+    if (user) {
+      const updated = { ...user, ...data };
+      setUser(updated);
+      if (data.active_store_id) {
+        localStorage.setItem('active_store_id', data.active_store_id);
+      }
+    }
   };
 
   const refreshProfile = async () => {

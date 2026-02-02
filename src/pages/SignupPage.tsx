@@ -89,14 +89,15 @@ export function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0077FF]/5 via-[#5AC8FA]/5 to-white dark:from-[#0A0A0A] dark:via-[#1A1A1A] dark:to-[#0A0A0A] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#0077FF]/5 via-[#5AC8FA]/5 to-white dark:from-[#0A0A0A] dark:via-[#1A1A1A] dark:to-[#0A0A0A] flex flex-col">
       {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-gradient-to-br from-[#0077FF]/10 to-[#5AC8FA]/10 blur-3xl" />
         <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-gradient-to-br from-[#5AC8FA]/10 to-[#0077FF]/10 blur-3xl" />
       </div>
 
-      <div className="w-full max-w-md relative">
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-md relative">
         {/* Logo */}
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0077FF] to-[#5AC8FA] flex items-center justify-center">
@@ -283,7 +284,9 @@ export function SignupPage() {
             ← Retour à l'accueil
           </Link>
         </div>
+        </div>
       </div>
+      
       <Footer />
     </div>
   );
