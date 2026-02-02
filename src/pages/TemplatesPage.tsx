@@ -1,201 +1,244 @@
-import { useState } from "react";
-import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
-import { Search, Filter } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Card, CardContent } from "../components/ui/card";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-const categories = ["Tous", "Mode", "High-tech", "Beauté", "Alimentation", "Sport", "Déco"];
-
-const templates = [
-  {
-    id: 1,
-    title: "Fashion Store",
-    category: "Mode",
-    image: "https://images.unsplash.com/photo-1761090617068-f1b3257d27ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXNoaW9uJTIwYm91dGlxdWUlMjBzdG9yZXxlbnwxfHx8fDE3NjQ1NjY4NjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    description: "Template élégant pour boutique de mode",
-  },
-  {
-    id: 2,
-    title: "Tech Shop",
-    category: "High-tech",
-    image: "https://images.unsplash.com/photo-1761207850745-d41a776ef897?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWNoJTIwZ2FkZ2V0cyUyMHNob3B8ZW58MXx8fHwxNzY0NjEyMDY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    description: "Design moderne pour produits tech",
-  },
-  {
-    id: 3,
-    title: "Beauty Haven",
-    category: "Beauté",
-    image: "https://images.unsplash.com/photo-1624574966266-1cdd65b74500?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWF1dHklMjBjb3NtZXRpY3MlMjBwcm9kdWN0c3xlbnwxfHx8fDE3NjQ1NzI3OTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    description: "Template raffiné pour cosmétiques",
-  },
-  {
-    id: 4,
-    title: "Urban Style",
-    category: "Mode",
-    image: "https://images.unsplash.com/photo-1761090617068-f1b3257d27ad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmYXNoaW9uJTIwYm91dGlxdWUlMjBzdG9yZXxlbnwxfHx8fDE3NjQ1NjY4NjR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    description: "Style urbain et contemporain",
-  },
-  {
-    id: 5,
-    title: "Gadget Pro",
-    category: "High-tech",
-    image: "https://images.unsplash.com/photo-1761207850745-d41a776ef897?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZWNoJTIwZ2FkZ2V0cyUyMHNob3B8ZW58MXx8fHwxNzY0NjEyMDY4fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    description: "Pour les dernières innovations",
-  },
-  {
-    id: 6,
-    title: "Glow Beauty",
-    category: "Beauté",
-    image: "https://images.unsplash.com/photo-1624574966266-1cdd65b74500?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWF1dHklMjBjb3NtZXRpY3MlMjBwcm9kdWN0c3xlbnwxfHx8fDE3NjQ1NzI3OTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    description: "Soins et beauté haut de gamme",
-  },
-];
+import { useState } from 'react';
+import { Card } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
+import {
+  Search,
+  Eye,
+  Settings2,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
+import { templates } from '../data/templates';
+import type { TemplateConfig } from '../types/template';
+import { TemplateVariantsPanel } from '../components/template-components/template-variants-panel';
+import { TemplateLivePreview } from '../components/template-components/template-live-preview';
+import { useNavigate } from 'react-router-dom';
 
 export function TemplatesPage() {
-  const [selectedCategory, setSelectedCategory] = useState("Tous");
-  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [variantsPanelOpen, setVariantsPanelOpen] = useState(false);
+  const [livePreviewOpen, setLivePreviewOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateConfig | null>(null);
 
-  const filteredTemplates = templates.filter(template => {
-    const matchesCategory = selectedCategory === "Tous" || template.category === selectedCategory;
-    const matchesSearch = template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         template.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+  const galleryTemplates: TemplateConfig[] = templates;
+
+  const categories = Array.from(new Set(galleryTemplates.map((t) => t.category)));
+
+  const filteredTemplates = galleryTemplates.filter((template) => {
+    const matchesSearch =
+      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesCategory = !selectedCategory || template.category === selectedCategory;
+
+    return matchesSearch && matchesCategory;
   });
 
-  const handleCustomTemplateRequest = () => {
-    toast.success("🎨 Demande de template personnalisé envoyée ! Notre équipe vous contactera sous 24h.", {
-      duration: 5000,
-      style: {
-        background: "linear-gradient(135deg, #0077FF 0%, #5AC8FA 100%)",
-        color: "white",
-        fontSize: "16px",
-        fontWeight: "600",
-        padding: "18px 22px",
-        borderRadius: "14px",
-        boxShadow: "0 20px 50px rgba(0, 119, 255, 0.3)"
-      }
-    });
-    // Optionnel: rediriger vers le support
-    setTimeout(() => navigate("/support"), 2000);
+  const handleViewVariants = (template: TemplateConfig) => {
+    setSelectedTemplate(template);
+    setVariantsPanelOpen(true);
+  };
+
+  const handleLivePreview = (template: TemplateConfig) => {
+    setSelectedTemplate(template);
+    setLivePreviewOpen(true);
+  };
+
+  const handleCustomize = (templateId: string) => {
+    navigate(`/templates/${templateId}/customize`);
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
-      <Header />
-      
-      <section className="py-24 bg-gradient-to-br from-[#0077FF]/5 via-[#5AC8FA]/5 to-white">
-        <div className="container mx-auto px-6">
-          {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h1 className="text-[#0A1A2F] mb-4" style={{ fontSize: '56px', fontWeight: '800' }}>
-              Nos Templates
-            </h1>
-            <p className="text-[#0A1A2F]/70 text-xl">
-              Découvrez notre collection de designs professionnels prêts à l'emploi
-            </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2 rounded-lg">
+                <Sparkles className="size-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">Choose Your Template</h1>
+                <p className="text-sm text-gray-500">Select and customize a professional design for your store</p>
+              </div>
+            </div>
           </div>
 
-          {/* Search and Filter */}
-          <div className="flex flex-col md:flex-row gap-4 mb-12 max-w-4xl mx-auto">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0A1A2F]/40" />
+          {/* Search and Filters */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
               <Input
-                type="search"
-                placeholder="Rechercher un template..."
+                placeholder="Search templates..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-14 rounded-xl border-2 border-gray-200 focus:border-[#0077FF]"
+                className="pl-10"
               />
             </div>
-            <Button variant="outline" className="h-14 px-6 rounded-xl border-2 border-gray-200 hover:border-[#0077FF]">
-              <Filter className="w-5 h-5 mr-2" />
-              Filtres
-            </Button>
-          </div>
-
-          {/* Categories */}
-          <div className="flex flex-wrap gap-3 justify-center mb-12">
-            {categories.map((category, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-6 py-3 rounded-xl transition-all ${
-                  selectedCategory === category
-                    ? "bg-gradient-to-r from-[#0077FF] to-[#5AC8FA] text-white shadow-lg"
-                    : "bg-white border-2 border-gray-200 text-[#0A1A2F] hover:border-[#0077FF]"
-                }`}
-                style={{ fontWeight: selectedCategory === category ? '600' : '500' }}
+            <div className="flex gap-2">
+              <Button
+                variant={selectedCategory === null ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory(null)}
               >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {/* Templates Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredTemplates.map((template) => (
-              <Card 
-                key={template.id}
-                className="group overflow-hidden border-2 border-gray-100 hover:border-[#0077FF]/30 hover:shadow-2xl transition-all duration-300 rounded-2xl cursor-pointer"
-                onClick={() => navigate(`/templates/${template.id}`)}
-              >
-                <CardContent className="p-0">
-                  <div className="relative overflow-hidden aspect-[4/3]">
-                    <ImageWithFallback
-                      src={template.image}
-                      alt={template.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A1A2F]/80 via-[#0A1A2F]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <Button className="bg-white text-[#0077FF] hover:bg-white/90 rounded-xl px-6">
-                        Voir le template
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <span className="inline-block px-3 py-1 bg-[#0077FF]/10 text-[#0077FF] text-sm rounded-full mb-3">
-                      {template.category}
-                    </span>
-                    <h3 className="text-[#0A1A2F] mb-2" style={{ fontSize: '20px', fontWeight: '700' }}>
-                      {template.title}
-                    </h3>
-                    <p className="text-[#0A1A2F]/70">
-                      {template.description}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="text-center mt-16">
-            <div className="inline-flex flex-col items-center gap-4 p-8 bg-gradient-to-br from-[#0077FF]/5 to-[#5AC8FA]/5 rounded-2xl border border-[#0077FF]/20">
-              <p className="text-[#0A1A2F] text-xl" style={{ fontWeight: '700' }}>
-                Vous ne trouvez pas ce que vous cherchez ?
-              </p>
-              <p className="text-[#0A1A2F]/70">
-                Contactez-nous pour un template personnalisé
-              </p>
-              <Button 
-                onClick={handleCustomTemplateRequest}
-                className="bg-[#0077FF] hover:bg-[#0077FF]/90 text-white rounded-xl px-8 h-12"
-              >
-                Demander un template sur mesure
+                All
               </Button>
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category}
+                </Button>
+              ))}
             </div>
           </div>
         </div>
-      </section>
+      </header>
 
-      <Footer />
+      {/* Templates Grid */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        <div className="mb-6">
+          <p className="text-sm text-gray-600">
+            {filteredTemplates.length} {filteredTemplates.length === 1 ? 'template' : 'templates'} found
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTemplates.map((template) => (
+            <Card
+              key={template.id}
+              className="group overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+            >
+              {/* Preview Image */}
+              <div className="relative h-64 overflow-hidden bg-gray-100">
+                <img
+                  src={template.previewImage}
+                  alt={template.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                {/* Hover Actions */}
+                <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleLivePreview(template)}
+                    className="bg-white/95 hover:bg-white"
+                  >
+                    <Eye className="size-4 mr-2" />
+                    Preview
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleViewVariants(template)}
+                    className="bg-white/95 hover:bg-white"
+                  >
+                    <Settings2 className="size-4 mr-2" />
+                    Variants
+                  </Button>
+                </div>
+
+                {/* Category Badge */}
+                <div className="absolute top-4 left-4">
+                  <Badge className="bg-white/90 text-gray-900 hover:bg-white">
+                    {template.category}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 flex flex-col flex-1">
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {template.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    {template.description}
+                  </p>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {template.tags.map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Features Preview */}
+                  <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+                    <span>{template.colorPalettes.length} Color Palettes</span>
+                    <span>•</span>
+                    <span>{template.layoutVariants.length} Layouts</span>
+                    <span>•</span>
+                    <span>{template.sections.filter((s) => s.enabled).length} Sections</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleViewVariants(template)}
+                    className="w-full"
+                  >
+                    <Settings2 className="size-4 mr-2" />
+                    View Variants
+                  </Button>
+                  <Button
+                    onClick={() => handleCustomize(template.id)}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    Customize
+                    <ArrowRight className="size-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {filteredTemplates.length === 0 && (
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center size-16 rounded-full bg-gray-100 mb-4">
+              <Search className="size-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No templates found</h3>
+            <p className="text-gray-600">Try adjusting your search or filters</p>
+          </div>
+        )}
+      </main>
+
+      {/* Variants Panel */}
+      {selectedTemplate && (
+        <TemplateVariantsPanel
+          template={selectedTemplate}
+          open={variantsPanelOpen}
+          onOpenChange={setVariantsPanelOpen}
+          onCustomize={handleCustomize}
+        />
+      )}
+
+      {/* Live Preview Modal */}
+      {selectedTemplate && (
+        <TemplateLivePreview
+          template={selectedTemplate}
+          open={livePreviewOpen}
+          onOpenChange={setLivePreviewOpen}
+          onCustomize={handleCustomize}
+        />
+      )}
     </div>
   );
 }

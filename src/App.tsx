@@ -7,6 +7,7 @@ import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { PricingPage } from "./pages/PricingPage";
 import { TemplatesPage } from "./pages/TemplatesPage";
+import { TemplateCustomizePage } from "./pages/TemplateCustomizePage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { OrdersPage } from "./pages/OrdersPage";
 import AddOrderPage from "./pages/AddOrderPage";
@@ -23,6 +24,7 @@ import { MyShopPage } from "./pages/MyShopPage";
 import ShopSettingsPage from "./pages/ShopSettingsPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeLanguageProvider } from "./context/ThemeLanguageContext";
+import { TemplateSelectionProvider } from "./context/TemplateSelectionContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Toaster } from "./components/ui/sonner";
 import { ScrollToHash } from "./components/ScrollToHash";
@@ -58,7 +60,7 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/templates" element={<TemplatesPage />} />
-      <Route path="/templates/:id" element={<TemplatesPage />} />
+      <Route path="/templates/:id/customize" element={<TemplateCustomizePage />} />
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/shop/:slug" element={<ShopPage />} />
       <Route path="/product/:id" element={<ProductDetailsPage />} />
@@ -155,11 +157,13 @@ export default function App() {
   return (
     <ThemeLanguageProvider>
       <AuthProvider>
-        <Router>
-          <ScrollToHash />
-          <AppRoutes />
-          <Toaster />
-        </Router>
+        <TemplateSelectionProvider>
+          <Router>
+            <ScrollToHash />
+            <AppRoutes />
+            <Toaster />
+          </Router>
+        </TemplateSelectionProvider>
       </AuthProvider>
     </ThemeLanguageProvider>
   );
